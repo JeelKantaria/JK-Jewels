@@ -71,11 +71,17 @@ export function ProductCard({ product }: ProductCardProps) {
 
     const handleAddToCart = async (e: React.MouseEvent) => {
         e.preventDefault();
+        if (!isAuthenticated) {
+            toast.error('Please login to add to cart');
+            return;
+        }
         try {
             await cartApi.addItem({ productId: product.id });
+            queryClient.invalidateQueries({ queryKey: ['cart'] });
             toast.success('Added to cart');
-        } catch (error) {
-            toast.error('Please login to add to cart');
+        } catch (error: any) {
+            const message = error.response?.data?.message || 'Failed to add to cart';
+            toast.error(message);
         }
     };
 

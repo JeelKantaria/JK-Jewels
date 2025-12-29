@@ -140,4 +140,67 @@ export const ordersApi = {
         api.post(`/orders/${orderNumber}/cancel`),
 };
 
+// Addresses API
+export const addressesApi = {
+    getAddresses: () =>
+        api.get('/addresses'),
+
+    getAddress: (id: string) =>
+        api.get(`/addresses/${id}`),
+
+    createAddress: (data: {
+        name: string;
+        phone: string;
+        addressLine1: string;
+        addressLine2?: string;
+        city: string;
+        state: string;
+        pincode: string;
+        country?: string;
+        isDefault?: boolean;
+    }) => api.post('/addresses', data),
+
+    updateAddress: (id: string, data: {
+        name?: string;
+        phone?: string;
+        addressLine1?: string;
+        addressLine2?: string;
+        city?: string;
+        state?: string;
+        pincode?: string;
+        country?: string;
+        isDefault?: boolean;
+    }) => api.put(`/addresses/${id}`, data),
+
+    deleteAddress: (id: string) =>
+        api.delete(`/addresses/${id}`),
+
+    setDefaultAddress: (id: string) =>
+        api.put(`/addresses/${id}/default`),
+};
+
+// Reviews API
+export const reviewsApi = {
+    getProductReviews: (productId: string, params?: { page?: number; limit?: number }) =>
+        api.get(`/reviews/product/${productId}`, { params }),
+
+    createReview: (productId: string, data: {
+        rating: number;
+        title?: string;
+        comment?: string;
+    }) => api.post(`/reviews/product/${productId}`, data),
+
+    deleteReview: (reviewId: string) =>
+        api.delete(`/reviews/${reviewId}`),
+};
+
+// Promo Code API
+export const promoApi = {
+    validate: (code: string, cartTotal: number) =>
+        api.post('/promo/validate', { code, cartTotal }),
+
+    getAvailable: () =>
+        api.get('/promo/available'),
+};
+
 export default api;

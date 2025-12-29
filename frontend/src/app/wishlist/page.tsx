@@ -43,6 +43,10 @@ export default function WishlistPage() {
             queryClient.invalidateQueries({ queryKey: ['cart'] });
             toast.success('Added to cart');
         },
+        onError: (error: any) => {
+            const message = error.response?.data?.message || 'Failed to add to cart';
+            toast.error(message);
+        },
     });
 
     // wishlistData is an array of WishlistItem, each with a nested 'product' object

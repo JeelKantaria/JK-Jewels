@@ -78,13 +78,13 @@ export default function OrdersPage() {
                                         </div>
                                         <div className="text-right">
                                             <div className="font-bold text-secondary-900 text-lg">
-                                                {formatPrice(order.total)}
+                                                {formatPrice(Number(order.totalAmount) || 0)}
                                             </div>
                                             <span className={`text-xs px-3 py-1 inline-block mt-1 ${order.status === 'DELIVERED' ? 'bg-green-100 text-green-800' :
-                                                    order.status === 'PROCESSING' ? 'bg-blue-100 text-blue-800' :
-                                                        order.status === 'SHIPPED' ? 'bg-purple-100 text-purple-800' :
-                                                            order.status === 'CANCELLED' ? 'bg-red-100 text-red-800' :
-                                                                'bg-cream-200 text-secondary-600'
+                                                order.status === 'PROCESSING' ? 'bg-blue-100 text-blue-800' :
+                                                    order.status === 'SHIPPED' ? 'bg-purple-100 text-purple-800' :
+                                                        order.status === 'CANCELLED' ? 'bg-red-100 text-red-800' :
+                                                            'bg-cream-200 text-secondary-600'
                                                 }`}>
                                                 {order.status}
                                             </span>

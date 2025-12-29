@@ -5,6 +5,91 @@ All notable changes to the J.K. Jewels project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2025-12-30
+
+### Added
+
+#### Promo Code System
+- **Promo Code API** (`/api/promo`) - Full validation and listing:
+  - `POST /validate` - Validates promo code with all business rules
+  - `GET /available` - Lists available codes for current user
+- **PromoCodeUsage Model** - Tracks per-user promo usage
+- **Configurable Promo Rules**:
+  - Percentage or fixed discount types
+  - Minimum order amount requirement
+  - Maximum discount cap
+  - Per-user usage limits
+  - First-order-only restriction
+  - Validity period (start/end dates)
+  - Global usage limits
+  - Combinable with other promos flag
+- **5 Seeded Promo Codes**: WELCOME10, FLAT500, LUXURY15, FESTIVE20, SAVE200
+
+#### Order Detail Page
+- **Dynamic Order Page** (`/account/orders/[orderNumber]`) with:
+  - Status timeline (Pending → Confirmed → Processing → Shipped → Delivered)
+  - Order items with images, prices, quantities
+  - Order summary (subtotal, tax, shipping, discount with promo code)
+  - Shipping address display
+  - Payment method and status
+  - Cancel order button for pending/confirmed orders
+
+#### Date/Time Improvements
+- **formatDateTime()** utility - Shows date and time in user's local timezone
+- **formatTime()** utility - Shows time only in user's local timezone
+- UTC storage in database, automatic timezone conversion on display
+
+### Fixed
+- Order totals showing NaN on orders list and account page
+- Item prices showing NaN on order detail page (field name corrections)
+- Missing promo code display on order summary
+
+### Changed
+- Checkout page now validates promo codes via API with real-time feedback
+- Shows discount amount and description when promo applied
+- Order pages use correct Prisma field names (totalAmount, taxAmount, etc.)
+
+---
+
+## [1.3.0] - 2025-12-29
+
+### Added
+
+#### Checkout Flow
+- **Checkout Page** (`/checkout`) - Complete checkout experience with:
+  - Order summary with cart items display
+  - Shipping address selection from saved addresses
+  - Promo code input with apply/remove functionality
+  - Order totals breakdown (subtotal, tax, shipping, discount)
+  - Customer notes field
+  - "Place Order" button with loading state
+- **Addresses API** (`/api/addresses`) - Full CRUD for user addresses:
+  - Create, read, update, delete addresses
+  - Set default address functionality
+  - Address validation (pincode, phone format)
+- **Addresses Page** - Fully functional UI for managing addresses
+
+#### Reviews & Ratings
+- **Reviews API** (`/api/reviews`) - Get/create/delete product reviews
+  - Rating distribution and average calculation
+  - Verified purchase badges
+- **ProductReviews Component** - Interactive reviews section on product pages
+  - Star rating input with hover states
+  - Review form with title and comment
+  - Reviews list with user info and ratings
+
+#### Social Sharing
+- **ShareButton Component** - Share products via:
+  - WhatsApp, Facebook, Twitter
+  - Copy link to clipboard
+  - Native Web Share API on mobile
+
+### Changed
+- **API Client** - Added `addressesApi` and `reviewsApi`
+- **Product Page** - Integrated reviews section and share button
+
+---
+
 ## [1.2.2] - 2025-12-29
 
 ### Added

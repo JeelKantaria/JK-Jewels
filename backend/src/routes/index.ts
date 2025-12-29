@@ -5,6 +5,9 @@ import categoryRoutes from './categories.js';
 import cartRoutes from './cart.js';
 import wishlistRoutes from './wishlist.js';
 import orderRoutes from './orders.js';
+import addressRoutes from './addresses.js';
+import reviewRoutes from './reviews.js';
+import promoRoutes from './promo.js';
 
 const router = Router();
 
@@ -24,5 +27,8 @@ router.use('/categories', categoryRoutes);
 router.use('/cart', cartRoutes);
 router.use('/wishlist', wishlistRoutes);
 router.use('/orders', orderRoutes);
+router.use('/addresses', addressRoutes);
+router.use('/reviews', reviewRoutes);
+router.use('/promo', promoRoutes);
 
 export default router;

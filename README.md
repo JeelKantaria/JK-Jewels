@@ -27,6 +27,9 @@
 - **Product Details** - Image gallery, size variants, related products
 - **Shopping Cart** - Animated slide-out cart with real-time updates
 - **Wishlist** - Save favorite products with always-visible heart badges (golden/ruby design)
+- **Checkout** - Complete checkout with address selection, promo codes, order notes
+- **Promo Codes** - Configurable discount codes with usage limits, expiry, min order rules
+- **Order Tracking** - View order status, timeline, items, and cancel pending orders
 - **User Authentication** - Email/password login with JWT tokens
 - **Account Dashboard** - View orders, manage settings, addresses
 
@@ -163,6 +166,16 @@ JK-Jewels/
 ### Categories
 - `GET /api/categories` - List all categories
 - `GET /api/categories/:slug` - Category details
+
+### Promo Codes
+- `POST /api/promo/validate` - Validate and calculate promo discount
+- `GET /api/promo/available` - List available codes for user
+
+### Addresses
+- `GET /api/addresses` - List user's addresses
+- `POST /api/addresses` - Create address
+- `PUT /api/addresses/:id` - Update address
+- `DELETE /api/addresses/:id` - Delete address
 
 ## 🎨 Design System
 

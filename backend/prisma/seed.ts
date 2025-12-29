@@ -345,11 +345,96 @@ async function main() {
             maxDiscount: 5000,
             minOrderAmount: 10000,
             usageLimit: 100,
+            perUserLimit: 1,
+            isFirstOrderOnly: true,
+            allowWithOther: false,
             validFrom: new Date(),
             validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
         },
     });
     console.log('✅ Promo code created: WELCOME10');
+
+    // Flat discount code
+    await prisma.promoCode.upsert({
+        where: { code: 'FLAT500' },
+        update: {},
+        create: {
+            code: 'FLAT500',
+            description: '₹500 off on orders above ₹5,000',
+            discountType: 'fixed',
+            discountValue: 500,
+            minOrderAmount: 5000,
+            usageLimit: 500,
+            perUserLimit: 3,
+            isFirstOrderOnly: false,
+            allowWithOther: false,
+            validFrom: new Date(),
+            validUntil: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000), // 6 months
+        },
+    });
+    console.log('✅ Promo code created: FLAT500');
+
+    // Premium discount for high-value orders
+    await prisma.promoCode.upsert({
+        where: { code: 'LUXURY15' },
+        update: {},
+        create: {
+            code: 'LUXURY15',
+            description: '15% off on orders above ₹1,00,000',
+            discountType: 'percentage',
+            discountValue: 15,
+            maxDiscount: 25000,
+            minOrderAmount: 100000,
+            usageLimit: 50,
+            perUserLimit: 2,
+            isFirstOrderOnly: false,
+            allowWithOther: false,
+            validFrom: new Date(),
+            validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        },
+    });
+    console.log('✅ Promo code created: LUXURY15');
+
+    // Festival offer
+    await prisma.promoCode.upsert({
+        where: { code: 'FESTIVE20' },
+        update: {},
+        create: {
+            code: 'FESTIVE20',
+            description: '20% off on all orders - Festival Special',
+            discountType: 'percentage',
+            discountValue: 20,
+            maxDiscount: 10000,
+            minOrderAmount: 15000,
+            usageLimit: 200,
+            perUserLimit: 1,
+            isFirstOrderOnly: false,
+            allowWithOther: false,
+            validFrom: new Date(),
+            validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+        },
+    });
+    console.log('✅ Promo code created: FESTIVE20');
+
+    // Small discount, easy to use
+    await prisma.promoCode.upsert({
+        where: { code: 'SAVE200' },
+        update: {},
+        create: {
+            code: 'SAVE200',
+            description: '₹200 off on any order',
+            discountType: 'fixed',
+            discountValue: 200,
+            minOrderAmount: 2000,
+            usageLimit: 1000,
+            perUserLimit: 5,
+            isFirstOrderOnly: false,
+            allowWithOther: true, // Can combine with other offers
+            validFrom: new Date(),
+            validUntil: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 3 months
+        },
+    });
+    console.log('✅ Promo code created: SAVE200');
 
     console.log('\n✨ Seeding completed successfully!');
     console.log('\n📋 Test accounts:');

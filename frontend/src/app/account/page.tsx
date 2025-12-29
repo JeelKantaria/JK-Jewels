@@ -177,7 +177,7 @@ export default function AccountPage() {
                                             </div>
                                             <div className="text-right">
                                                 <div className="font-semibold text-secondary-900">
-                                                    {formatPrice(order.total)}
+                                                    {formatPrice(Number(order.totalAmount) || 0)}
                                                 </div>
                                                 <div className={`text-xs px-2 py-1 inline-block ${order.status === 'DELIVERED' ? 'bg-green-100 text-green-800' :
                                                     order.status === 'PROCESSING' ? 'bg-blue-100 text-blue-800' :

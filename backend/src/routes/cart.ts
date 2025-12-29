@@ -147,14 +147,12 @@ router.post('/items', asyncHandler(async (req: Request, res: Response) => {
     }
 
     // Check if item already in cart
-    // Note: Prisma unique constraint lookup requires exact type match
-    const existingItem = await prisma.cartItem.findUnique({
+    // Use findFirst instead of findUnique because the composite key doesn't handle null variantId well
+    const existingItem = await prisma.cartItem.findFirst({
         where: {
-            cartId_productId_variantId: {
-                cartId: cart.id,
-                productId,
-                variantId: variantId as string,
-            },
+            cartId: cart.id,
+            productId,
+            variantId: variantId || null,
         },
     });
 

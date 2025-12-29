@@ -11,6 +11,8 @@ import { productsApi, cartApi, wishlistApi } from '@/lib/api';
 import { formatPrice } from '@/lib/utils';
 import { useWishlistStore, useAuthStore } from '@/lib/store';
 import { ProductGrid, ProductGridSkeleton } from '@/components/product/product-card';
+import { ProductReviews } from '@/components/product/product-reviews';
+import { ShareButton } from '@/components/product/share-button';
 import toast from 'react-hot-toast';
 
 export default function ProductPage() {
@@ -342,10 +344,10 @@ export default function ProductPage() {
                             >
                                 <Heart size={20} fill={inWishlist ? 'currentColor' : 'none'} />
                             </button>
-                            <button className="w-12 h-12 flex items-center justify-center border border-cream-400 
-                               hover:border-secondary-900 transition-colors">
-                                <Share2 size={20} />
-                            </button>
+                            <ShareButton
+                                productName={product.name}
+                                productUrl={`/products/${product.slug}`}
+                            />
                         </div>
 
                         {/* Features */}
@@ -381,6 +383,9 @@ export default function ProductPage() {
                         </div>
                     </div>
                 </div>
+
+                {/* Reviews Section */}
+                <ProductReviews productId={product.id} productName={product.name} />
 
                 {/* Related Products */}
                 {product.relatedProducts?.length > 0 && (

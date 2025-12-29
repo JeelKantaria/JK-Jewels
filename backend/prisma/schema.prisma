@@ -38,6 +38,7 @@ model User {
   reviews       Review[]
   wishlist      WishlistItem[]
   cart          Cart?
+  promoCodeUsages PromoCodeUsage[]
   
   @@map("users")
 }
@@ -362,15 +363,39 @@ model PromoCode {
   minOrderAmount  Decimal?  @map("min_order_amount") @db.Decimal(12, 2)
   maxDiscount     Decimal?  @map("max_discount") @db.Decimal(12, 2)
   
-  usageLimit      Int?      @map("usage_limit")
+  usageLimit      Int?      @map("usage_limit") // Total usage limit
   usedCount       Int       @default(0) @map("used_count")
+  perUserLimit    Int       @default(1) @map("per_user_limit") // Limit per user
   
   validFrom       DateTime  @map("valid_from")
   validUntil      DateTime  @map("valid_until")
   isActive        Boolean   @default(true) @map("is_active")
   
+  // Additional restrictions
+  isFirstOrderOnly   Boolean  @default(false) @map("is_first_order_only")
+  allowWithOther     Boolean  @default(false) @map("allow_with_other") // Can be combined with other codes
+  applicableCategory String?  @map("applicable_category") // Category slug restriction
+  
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
   
+  usages          PromoCodeUsage[]
+  
   @@map("promo_codes")
 }
+
+model PromoCodeUsage {
+  id          String    @id @default(uuid())
+  promoCodeId String    @map("promo_code_id")
+  promoCode   PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
+  userId      String    @map("user_id")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderId     String?   @map("order_id") // Linked after order placed
+  
+  discountAmount Decimal @map("discount_amount") @db.Decimal(12, 2)
+  usedAt      DateTime  @default(now()) @map("used_at")
+  
+  @@unique([promoCodeId, userId, orderId])
+  @@map("promo_code_usages")
+}
+
