@@ -169,15 +169,14 @@
 
   /* Rose Gold Metallic Wishlist Heart */
   .wishlist-heart {
-    @apply absolute top-3 right-3 z-10;
+    @apply absolute top-3 right-3 z-10 overflow-hidden;
+    padding: 2px;
+    /* Accommodate the thicker outer border */
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
   }
 
   .wishlist-heart svg {
-    color: #E8B4B8;
-    fill: url(#rose-gold-gradient);
-    stroke: #B76E79;
-    stroke-width: 1;
+    /* Styles handled inline in component for custom gradient */
   }
 
   .wishlist-heart::after {

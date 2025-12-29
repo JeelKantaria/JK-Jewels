@@ -5,6 +5,18 @@ All notable changes to the J.K. Jewels project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2025-12-29
+
+### Changed
+
+#### Wishlist Icon Redesign
+- **Golden Heart with Ruby Border** - Replaced charcoal/gold design with luxurious gold gradient fill and ruby red border
+- **Triple-Layer Design** - Inner gold gradient fill, ruby red border (2px), and outer gold accent border (1px visible)
+- **Contained Shimmer Effect** - Fixed shimmer animation to stay within icon boundaries
+- **SVG Gradient Colors** - Uses theme tokens: Antique Gold (`#C9A962`), Light Gold (`#F5E6C8`), Ruby (`#8B2942`)
+
+---
+
 ## [1.2.0] - 2025-12-29
 
 ### Added

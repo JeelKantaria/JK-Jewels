@@ -26,7 +26,7 @@
 - **Search** - Live search with auto-suggestions and instant results
 - **Product Details** - Image gallery, size variants, related products
 - **Shopping Cart** - Animated slide-out cart with real-time updates
-- **Wishlist** - Save favorite products with always-visible heart badges (charcoal/gold design)
+- **Wishlist** - Save favorite products with always-visible heart badges (golden/ruby design)
 - **User Authentication** - Email/password login with JWT tokens
 - **Account Dashboard** - View orders, manage settings, addresses
 

@@ -120,23 +120,28 @@ export function ProductCard({ product }: ProductCardProps) {
                             <span className="badge-new">New</span>
                         )}
 
-                        {/* Wishlist Badge - Black/Charcoal with Gold Accent */}
+                        {/* Wishlist Badge - Golden Heart with Ruby Border */}
                         {inWishlist && (
-                            <span className="wishlist-heart overflow-hidden">
-                                <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <span className="wishlist-heart">
+                                <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="overflow-visible">
                                     <defs>
-                                        <linearGradient id="charcoal-gold-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                            <stop offset="0%" stopColor="#454545" />
-                                            <stop offset="40%" stopColor="#1A1A1A" />
-                                            <stop offset="60%" stopColor="#2d2d2d" />
-                                            <stop offset="100%" stopColor="#454545" />
+                                        <linearGradient id="gold-fill-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" stopColor="#C9A962" />
+                                            <stop offset="50%" stopColor="#F5E6C8" />
+                                            <stop offset="100%" stopColor="#C9A962" />
                                         </linearGradient>
                                     </defs>
                                     <path
                                         d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-                                        fill="url(#charcoal-gold-gradient)"
+                                        fill="none"
                                         stroke="#C9A962"
-                                        strokeWidth="1.5"
+                                        strokeWidth="4"
+                                    />
+                                    <path
+                                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                                        fill="url(#gold-fill-gradient)"
+                                        stroke="#8B2942"
+                                        strokeWidth="2"
                                     />
                                 </svg>
                             </span>
