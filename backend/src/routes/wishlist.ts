@@ -1,14 +1,19 @@
-import { Router, Response } from 'express';
+import { Router, Response, Request, RequestHandler } from 'express';
+import { z } from 'zod';
 import prisma from '../lib/prisma.js';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
-import { AppError } from '../middleware/error.js';
+import { AppError, ErrorCodes } from '../middleware/error.js';
+import { asyncHandler } from '../middleware/asyncHandler.js';
 
 const router = Router();
 
-router.use(authenticate);
+router.use(authenticate as unknown as RequestHandler);
+
+// Validation for productId param
+const productIdSchema = z.string().uuid('Invalid product ID format');
 
 // GET /api/wishlist - Get user's wishlist
-router.get('/', async (req: AuthRequest, res: Response) => {
+router.get('/', asyncHandler(async (req: AuthRequest, res: Response) => {
     const wishlist = await prisma.wishlistItem.findMany({
         where: { userId: req.user!.id },
         include: {
@@ -30,11 +35,21 @@ router.get('/', async (req: AuthRequest, res: Response) => {
         success: true,
         data: wishlist,
     });
-});
+}));
 
 // POST /api/wishlist/:productId - Add to wishlist
-router.post('/:productId', async (req: AuthRequest, res: Response) => {
+router.post('/:productId', asyncHandler(async (req: AuthRequest, res: Response) => {
     const { productId } = req.params;
+
+    // Validate productId format
+    const validationResult = productIdSchema.safeParse(productId);
+    if (!validationResult.success) {
+        throw new AppError(
+            'Invalid product ID format',
+            400,
+            ErrorCodes.VALIDATION_ERROR
+        );
+    }
 
     // Check product exists
     const product = await prisma.product.findUnique({
@@ -42,7 +57,11 @@ router.post('/:productId', async (req: AuthRequest, res: Response) => {
     });
 
     if (!product) {
-        throw new AppError('Product not found', 404);
+        throw new AppError(
+            'Product not found',
+            404,
+            ErrorCodes.PRODUCT_NOT_FOUND
+        );
     }
 
     // Check if already in wishlist
@@ -74,11 +93,21 @@ router.post('/:productId', async (req: AuthRequest, res: Response) => {
         success: true,
         message: 'Added to wishlist',
     });
-});
+}));
 
 // DELETE /api/wishlist/:productId - Remove from wishlist
-router.delete('/:productId', async (req: AuthRequest, res: Response) => {
+router.delete('/:productId', asyncHandler(async (req: AuthRequest, res: Response) => {
     const { productId } = req.params;
+
+    // Validate productId format (optional - deleteMany won't fail on invalid UUID)
+    const validationResult = productIdSchema.safeParse(productId);
+    if (!validationResult.success) {
+        throw new AppError(
+            'Invalid product ID format',
+            400,
+            ErrorCodes.VALIDATION_ERROR
+        );
+    }
 
     await prisma.wishlistItem.deleteMany({
         where: {
@@ -91,10 +120,10 @@ router.delete('/:productId', async (req: AuthRequest, res: Response) => {
         success: true,
         message: 'Removed from wishlist',
     });
-});
+}));
 
 // DELETE /api/wishlist - Clear entire wishlist
-router.delete('/', async (req: AuthRequest, res: Response) => {
+router.delete('/', asyncHandler(async (req: AuthRequest, res: Response) => {
     await prisma.wishlistItem.deleteMany({
         where: {
             userId: req.user!.id,
@@ -105,6 +134,6 @@ router.delete('/', async (req: AuthRequest, res: Response) => {
         success: true,
         message: 'Wishlist cleared',
     });
-});
+}));
 
 export default router;

@@ -5,6 +5,23 @@ All notable changes to the J.K. Jewels project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-12-29
+
+### Added
+
+#### Backend Testing & Reliability
+- **Comprehensive Test Suite** - Implemented 66+ automated tests using Jest & Supertest
+- **Integration Tests** - Covering Auth, Cart, Orders, Products, Wishlist, and Categories routes
+- **Unit Tests** - For critical utilities like error handling and token generation
+- **Robust Error Handling** - Centralized `asyncHandler` and standardized error responses
+- **Error Codes** - Added specific error codes (e.g. `INSUFFICIENT_STOCK`, `PROMO_EXPIRED`) for better frontend handling
+- **Input Validation** - Enhanced Zod schemas for all API endpoints
+
+### Fixed
+- **Type Safety** - Resolved TypeScript errors in route handlers and middleware
+- **Cart Logic** - Fixed variant ID handling in cart operations
+- **JWT Verification** - Improved token validation and error messages
+
 ## [1.1.0] - 2024-12-29
 
 ### Added

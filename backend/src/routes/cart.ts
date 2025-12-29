@@ -1,15 +1,28 @@
 import { Router, Request, Response, NextFunction } from 'express';
+import { z } from 'zod';
 import prisma from '../lib/prisma.js';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
-import { AppError } from '../middleware/error.js';
+import { AppError, ErrorCodes } from '../middleware/error.js';
+import { asyncHandler } from '../middleware/asyncHandler.js';
 
 const router = Router();
+
+// Validation schemas
+const addToCartSchema = z.object({
+    productId: z.string().uuid('Invalid product ID format'),
+    variantId: z.string().uuid('Invalid variant ID format').optional().nullable().transform(v => v ?? null),
+    quantity: z.number().int().min(1, 'Quantity must be at least 1').default(1),
+});
+
+const updateCartItemSchema = z.object({
+    quantity: z.number().int().min(1, 'Quantity must be at least 1'),
+});
 
 // All cart routes require authentication
 router.use(authenticate as (req: Request, res: Response, next: NextFunction) => void);
 
 // GET /api/cart - Get user's cart
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', asyncHandler(async (req: Request, res: Response) => {
     const user = (req as AuthRequest).user!;
 
     let cart = await prisma.cart.findUnique({
@@ -33,7 +46,7 @@ router.get('/', async (req: Request, res: Response) => {
 
     // Create cart if doesn't exist
     if (!cart) {
-        const newCart = await prisma.cart.create({
+        cart = await prisma.cart.create({
             data: { userId: user.id },
             include: {
                 items: {
@@ -51,7 +64,6 @@ router.get('/', async (req: Request, res: Response) => {
                 }
             },
         });
-        cart = newCart;
     }
 
     // Calculate totals
@@ -74,16 +86,19 @@ router.get('/', async (req: Request, res: Response) => {
             itemCount: cart.items.reduce((sum, item) => sum + item.quantity, 0),
         },
     });
-});
+}));
 
 // POST /api/cart/items - Add item to cart
-router.post('/items', async (req: Request, res: Response) => {
+router.post('/items', asyncHandler(async (req: Request, res: Response) => {
     const user = (req as AuthRequest).user!;
-    const { productId, variantId, quantity = 1 } = req.body;
 
-    if (!productId) {
-        throw new AppError('Product ID is required', 400);
+    // Validate input
+    const validationResult = addToCartSchema.safeParse(req.body);
+    if (!validationResult.success) {
+        throw validationResult.error;
     }
+
+    const { productId, variantId, quantity } = validationResult.data;
 
     // Get or create cart
     let cart = await prisma.cart.findUnique({
@@ -102,7 +117,11 @@ router.post('/items', async (req: Request, res: Response) => {
     });
 
     if (!product) {
-        throw new AppError('Product not found', 404);
+        throw new AppError(
+            'Product not found',
+            404,
+            ErrorCodes.PRODUCT_NOT_FOUND
+        );
     }
 
     // Check variant if provided
@@ -111,20 +130,30 @@ router.post('/items', async (req: Request, res: Response) => {
             where: { id: variantId, productId },
         });
         if (!variant) {
-            throw new AppError('Variant not found', 404);
+            throw new AppError(
+                'Variant not found',
+                404,
+                ErrorCodes.VARIANT_NOT_FOUND
+            );
         }
         if (variant.stockQuantity < quantity) {
-            throw new AppError('Insufficient stock', 400);
+            throw new AppError(
+                `Only ${variant.stockQuantity} items available in stock`,
+                400,
+                ErrorCodes.INSUFFICIENT_STOCK,
+                { available: variant.stockQuantity, requested: quantity }
+            );
         }
     }
 
     // Check if item already in cart
+    // Note: Prisma unique constraint lookup requires exact type match
     const existingItem = await prisma.cartItem.findUnique({
         where: {
             cartId_productId_variantId: {
                 cartId: cart.id,
                 productId,
-                variantId: variantId || null,
+                variantId: variantId as string,
             },
         },
     });
@@ -155,17 +184,20 @@ router.post('/items', async (req: Request, res: Response) => {
         message: 'Item added to cart',
         data: cartItem,
     });
-});
+}));
 
 // PUT /api/cart/items/:id - Update cart item quantity
-router.put('/items/:id', async (req: Request, res: Response) => {
+router.put('/items/:id', asyncHandler(async (req: Request, res: Response) => {
     const user = (req as AuthRequest).user!;
     const { id } = req.params;
-    const { quantity } = req.body;
 
-    if (!quantity || quantity < 1) {
-        throw new AppError('Valid quantity is required', 400);
+    // Validate input
+    const validationResult = updateCartItemSchema.safeParse(req.body);
+    if (!validationResult.success) {
+        throw validationResult.error;
     }
+
+    const { quantity } = validationResult.data;
 
     // Find cart item and verify ownership
     const cartItem = await prisma.cartItem.findFirst({
@@ -177,12 +209,21 @@ router.put('/items/:id', async (req: Request, res: Response) => {
     });
 
     if (!cartItem) {
-        throw new AppError('Cart item not found', 404);
+        throw new AppError(
+            'Cart item not found',
+            404,
+            ErrorCodes.CART_ITEM_NOT_FOUND
+        );
     }
 
     // Check stock if variant
     if (cartItem.variant && cartItem.variant.stockQuantity < quantity) {
-        throw new AppError('Insufficient stock', 400);
+        throw new AppError(
+            `Only ${cartItem.variant.stockQuantity} items available in stock`,
+            400,
+            ErrorCodes.INSUFFICIENT_STOCK,
+            { available: cartItem.variant.stockQuantity, requested: quantity }
+        );
     }
 
     const updatedItem = await prisma.cartItem.update({
@@ -196,10 +237,10 @@ router.put('/items/:id', async (req: Request, res: Response) => {
         message: 'Cart updated',
         data: updatedItem,
     });
-});
+}));
 
 // DELETE /api/cart/items/:id - Remove item from cart
-router.delete('/items/:id', async (req: Request, res: Response) => {
+router.delete('/items/:id', asyncHandler(async (req: Request, res: Response) => {
     const user = (req as AuthRequest).user!;
     const { id } = req.params;
 
@@ -212,7 +253,11 @@ router.delete('/items/:id', async (req: Request, res: Response) => {
     });
 
     if (!cartItem) {
-        throw new AppError('Cart item not found', 404);
+        throw new AppError(
+            'Cart item not found',
+            404,
+            ErrorCodes.CART_ITEM_NOT_FOUND
+        );
     }
 
     await prisma.cartItem.delete({ where: { id } });
@@ -221,10 +266,10 @@ router.delete('/items/:id', async (req: Request, res: Response) => {
         success: true,
         message: 'Item removed from cart',
     });
-});
+}));
 
 // DELETE /api/cart - Clear cart
-router.delete('/', async (req: Request, res: Response) => {
+router.delete('/', asyncHandler(async (req: Request, res: Response) => {
     const user = (req as AuthRequest).user!;
 
     const cart = await prisma.cart.findUnique({
@@ -241,6 +286,6 @@ router.delete('/', async (req: Request, res: Response) => {
         success: true,
         message: 'Cart cleared',
     });
-});
+}));
 
 export default router;

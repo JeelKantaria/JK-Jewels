@@ -95,6 +95,24 @@ const shutdown = async () => {
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason: Error | unknown, promise: Promise<unknown>) => {
+    console.error('❌ Unhandled Rejection at:', promise);
+    console.error('Reason:', reason);
+    // Don't exit in production, but log for monitoring
+    if (config.isDev) {
+        // In development, exit to make the error obvious
+        process.exit(1);
+    }
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error: Error) => {
+    console.error('❌ Uncaught Exception:', error);
+    // Always exit on uncaught exceptions as the app may be in an unstable state
+    process.exit(1);
+});
+
 startServer();
 
 export default app;

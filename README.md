@@ -203,6 +203,7 @@ npm run dev      # Start with hot reload
 npm run build    # Compile TypeScript
 npm run start    # Start production server
 npm run db:seed  # Seed database
+npm run test     # Run test suite
 ```
 
 ## 📄 License
