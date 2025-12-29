@@ -18,7 +18,8 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
             if (accessToken) {
                 try {
                     const response = await authApi.getMe();
-                    const user = response.data.data.user;
+                    // API returns user directly in data, not data.user
+                    const user = response.data.data;
                     login(user, accessToken, refreshToken || '');
                 } catch (error) {
                     // Token invalid, clear cookies

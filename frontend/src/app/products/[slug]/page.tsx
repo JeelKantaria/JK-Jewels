@@ -6,22 +6,24 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, ShoppingBag, Share2, Truck, Shield, RefreshCw, Star, ChevronLeft, ChevronRight, Minus, Plus } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { productsApi, cartApi } from '@/lib/api';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { productsApi, cartApi, wishlistApi } from '@/lib/api';
 import { formatPrice } from '@/lib/utils';
-import { useWishlistStore } from '@/lib/store';
+import { useWishlistStore, useAuthStore } from '@/lib/store';
 import { ProductGrid, ProductGridSkeleton } from '@/components/product/product-card';
 import toast from 'react-hot-toast';
 
 export default function ProductPage() {
     const params = useParams();
     const slug = params.slug as string;
+    const queryClient = useQueryClient();
 
     const [selectedImage, setSelectedImage] = useState(0);
     const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
     const [quantity, setQuantity] = useState(1);
 
     const { addItem, removeItem, isInWishlist } = useWishlistStore();
+    const { isAuthenticated } = useAuthStore();
 
     const { data: product, isLoading, error } = useQuery({
         queryKey: ['product', slug],
@@ -67,12 +69,34 @@ export default function ProductPage() {
         }
     };
 
-    const handleWishlistToggle = () => {
+    const handleWishlistToggle = async () => {
         if (inWishlist) {
             removeItem(product.id);
+            // Sync with backend if authenticated
+            if (isAuthenticated) {
+                try {
+                    await wishlistApi.removeItem(product.id);
+                    // Invalidate wishlist cache so wishlist page shows updated data
+                    queryClient.invalidateQueries({ queryKey: ['wishlist'] });
+                } catch (error) {
+                    // Revert on error
+                    addItem(product.id);
+                }
+            }
             toast.success('Removed from wishlist');
         } else {
             addItem(product.id);
+            // Sync with backend if authenticated
+            if (isAuthenticated) {
+                try {
+                    await wishlistApi.addItem(product.id);
+                    // Invalidate wishlist cache so wishlist page shows updated data
+                    queryClient.invalidateQueries({ queryKey: ['wishlist'] });
+                } catch (error) {
+                    // Revert on error
+                    removeItem(product.id);
+                }
+            }
             toast.success('Added to wishlist');
         }
     };
@@ -267,10 +291,10 @@ export default function ProductPage() {
                                             onClick={() => setSelectedVariant(variant.id)}
                                             disabled={variant.stockQuantity === 0}
                                             className={`min-w-[60px] px-4 py-2 text-sm border transition-all ${selectedVariant === variant.id
-                                                    ? 'border-secondary-900 bg-secondary-900 text-cream-100'
-                                                    : variant.stockQuantity === 0
-                                                        ? 'border-cream-300 text-cream-400 cursor-not-allowed'
-                                                        : 'border-cream-400 hover:border-secondary-900'
+                                                ? 'border-secondary-900 bg-secondary-900 text-cream-100'
+                                                : variant.stockQuantity === 0
+                                                    ? 'border-cream-300 text-cream-400 cursor-not-allowed'
+                                                    : 'border-cream-400 hover:border-secondary-900'
                                                 }`}
                                         >
                                             {variant.size}
@@ -312,8 +336,8 @@ export default function ProductPage() {
                             <button
                                 onClick={handleWishlistToggle}
                                 className={`w-12 h-12 flex items-center justify-center border transition-colors ${inWishlist
-                                        ? 'border-accent-800 bg-accent-800 text-white'
-                                        : 'border-cream-400 hover:border-secondary-900'
+                                    ? 'border-accent-800 bg-accent-800 text-white'
+                                    : 'border-cream-400 hover:border-secondary-900'
                                     }`}
                             >
                                 <Heart size={20} fill={inWishlist ? 'currentColor' : 'none'} />

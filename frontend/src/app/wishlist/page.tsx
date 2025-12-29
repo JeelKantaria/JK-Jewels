@@ -45,7 +45,10 @@ export default function WishlistPage() {
         },
     });
 
-    const products = isAuthenticated ? (wishlistData?.products || []) : [];
+    // wishlistData is an array of WishlistItem, each with a nested 'product' object
+    const products = isAuthenticated
+        ? (wishlistData?.map((item: any) => item.product).filter(Boolean) || [])
+        : [];
 
     if (!isAuthenticated) {
         return (
@@ -123,10 +126,19 @@ export default function WishlistPage() {
                         </p>
                     </div>
                     <button
-                        onClick={() => {
+                        onClick={async () => {
                             if (confirm('Are you sure you want to clear your wishlist?')) {
-                                clearWishlist();
-                                // Could also call API to clear server-side wishlist
+                                try {
+                                    // Clear from backend API
+                                    await wishlistApi.clearAll();
+                                    // Clear local store
+                                    clearWishlist();
+                                    // Invalidate cache to update UI
+                                    queryClient.invalidateQueries({ queryKey: ['wishlist'] });
+                                    toast.success('Wishlist cleared');
+                                } catch (error) {
+                                    toast.error('Failed to clear wishlist');
+                                }
                             }
                         }}
                         className="text-secondary-500 hover:text-accent-800 text-sm transition-colors"

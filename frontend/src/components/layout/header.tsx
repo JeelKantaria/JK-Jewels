@@ -61,8 +61,8 @@ export function Header() {
             {/* Main Header */}
             <header
                 className={`sticky top-0 z-50 transition-all duration-500 ${isScrolled
-                        ? 'bg-white/95 backdrop-blur-md shadow-lg'
-                        : 'bg-cream-100'
+                    ? 'bg-white/95 backdrop-blur-md shadow-lg'
+                    : 'bg-cream-100'
                     }`}
             >
                 <div className="container-luxury">
@@ -158,12 +158,6 @@ export function Header() {
                                 aria-label="Wishlist"
                             >
                                 <Heart size={22} />
-                                {wishlistItems.length > 0 && (
-                                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent-800 text-white 
-                                 text-xs flex items-center justify-center">
-                                        {wishlistItems.length}
-                                    </span>
-                                )}
                             </Link>
 
                             {/* User Account */}

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { User, Package, Heart, MapPin, Settings, LogOut, ChevronRight } from 'lucide-react';
-import { useAuthStore } from '@/lib/store';
+import { useAuthStore, useWishlistStore } from '@/lib/store';
 import { useQuery } from '@tanstack/react-query';
 import { ordersApi, authApi } from '@/lib/api';
 import { formatPrice, formatDate } from '@/lib/utils';
@@ -15,6 +15,7 @@ import toast from 'react-hot-toast';
 export default function AccountPage() {
     const router = useRouter();
     const { isAuthenticated, user, logout } = useAuthStore();
+    const { items: wishlistItems } = useWishlistStore();
 
     // Redirect if not authenticated
     useEffect(() => {
@@ -123,7 +124,7 @@ export default function AccountPage() {
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             {[
                                 { label: 'Orders', value: ordersData?.orders?.length || 0 },
-                                { label: 'Wishlist', value: '—' },
+                                { label: 'Wishlist', value: wishlistItems.length },
                                 { label: 'Reviews', value: '—' },
                                 { label: 'Rewards', value: '0 pts' },
                             ].map((stat, index) => (
@@ -179,9 +180,9 @@ export default function AccountPage() {
                                                     {formatPrice(order.total)}
                                                 </div>
                                                 <div className={`text-xs px-2 py-1 inline-block ${order.status === 'DELIVERED' ? 'bg-green-100 text-green-800' :
-                                                        order.status === 'PROCESSING' ? 'bg-blue-100 text-blue-800' :
-                                                            order.status === 'SHIPPED' ? 'bg-purple-100 text-purple-800' :
-                                                                'bg-cream-200 text-secondary-600'
+                                                    order.status === 'PROCESSING' ? 'bg-blue-100 text-blue-800' :
+                                                        order.status === 'SHIPPED' ? 'bg-purple-100 text-purple-800' :
+                                                            'bg-cream-200 text-secondary-600'
                                                     }`}>
                                                     {order.status}
                                                 </div>
@@ -198,39 +199,6 @@ export default function AccountPage() {
                                     </Link>
                                 </div>
                             )}
-                        </div>
-
-                        {/* Quick Actions */}
-                        <div className="grid md:grid-cols-2 gap-4">
-                            {menuItems.slice(0, 2).map((item, index) => (
-                                <motion.div
-                                    key={item.label}
-                                    initial={{ opacity: 0, x: index === 0 ? -20 : 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                >
-                                    <Link
-                                        href={item.href}
-                                        className="flex items-center gap-4 bg-white p-6 shadow-card
-                                                 hover:shadow-luxury transition-shadow group"
-                                    >
-                                        <div className="w-12 h-12 bg-cream-100 flex items-center justify-center
-                                                      group-hover:bg-primary-100 transition-colors">
-                                            <item.icon className="text-secondary-400 
-                                                                 group-hover:text-primary-600 transition-colors" />
-                                        </div>
-                                        <div>
-                                            <div className="font-medium text-secondary-900">
-                                                {item.label}
-                                            </div>
-                                            <div className="text-sm text-secondary-500">
-                                                {item.description}
-                                            </div>
-                                        </div>
-                                        <ChevronRight className="ml-auto text-cream-400 
-                                                               group-hover:text-primary-600 transition-colors" />
-                                    </Link>
-                                </motion.div>
-                            ))}
                         </div>
                     </div>
                 </div>

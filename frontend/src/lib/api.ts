@@ -74,6 +74,9 @@ export const productsApi = {
 
     getNewArrivals: () =>
         api.get('/products/new-arrivals'),
+
+    getFilters: () =>
+        api.get('/products/filters'),
 };
 
 // Categories API
@@ -113,6 +116,9 @@ export const wishlistApi = {
 
     removeItem: (productId: string) =>
         api.delete(`/wishlist/${productId}`),
+
+    clearAll: () =>
+        api.delete('/wishlist'),
 };
 
 // Orders API

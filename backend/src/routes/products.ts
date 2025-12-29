@@ -136,6 +136,65 @@ router.get('/', optionalAuth as any, async (req: Request, res: Response) => {
     }
 });
 
+// GET /api/products/filters - Get filter counts for metal, purity, occasion
+router.get('/filters', async (_req: Request, res: Response) => {
+    try {
+        // Get counts for each metal type
+        const metalCounts = await prisma.product.groupBy({
+            by: ['metalType'],
+            where: { isActive: true },
+            _count: { metalType: true },
+        });
+
+        // Get counts for each purity
+        const purityCounts = await prisma.product.groupBy({
+            by: ['purity'],
+            where: { isActive: true },
+            _count: { purity: true },
+        });
+
+        // Get all active products to count occasions (since it's an array field)
+        const products = await prisma.product.findMany({
+            where: { isActive: true },
+            select: { occasion: true },
+        });
+
+        // Count occasions manually (groupBy doesn't work on array fields)
+        const occasionCountMap: Record<string, number> = {};
+        products.forEach((product) => {
+            product.occasion.forEach((occ) => {
+                occasionCountMap[occ] = (occasionCountMap[occ] || 0) + 1;
+            });
+        });
+
+        const occasionCounts = Object.entries(occasionCountMap).map(([occasion, count]) => ({
+            occasion,
+            count,
+        }));
+
+        res.json({
+            success: true,
+            data: {
+                metalTypes: metalCounts.map((m) => ({
+                    name: m.metalType,
+                    count: m._count.metalType,
+                })),
+                purities: purityCounts.map((p) => ({
+                    name: p.purity,
+                    count: p._count.purity,
+                })),
+                occasions: occasionCounts,
+            },
+        });
+    } catch (error) {
+        console.error('Error fetching filter counts:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch filter counts',
+        });
+    }
+});
+
 // GET /api/products/featured - Get featured products
 router.get('/featured', async (_req: Request, res: Response) => {
     const products = await prisma.product.findMany({

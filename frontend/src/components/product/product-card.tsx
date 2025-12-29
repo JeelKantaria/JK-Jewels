@@ -4,9 +4,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Heart, ShoppingBag, Eye } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { formatPrice } from '@/lib/utils';
-import { useWishlistStore, useCartStore } from '@/lib/store';
-import { cartApi } from '@/lib/api';
+import { useWishlistStore, useCartStore, useAuthStore } from '@/lib/store';
+import { cartApi, wishlistApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 
 interface ProductCardProps {
@@ -27,19 +28,43 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+    const queryClient = useQueryClient();
     const { addItem, removeItem, isInWishlist } = useWishlistStore();
+    const { isAuthenticated } = useAuthStore();
     const inWishlist = isInWishlist(product.id);
 
     const primaryImage = product.images.find(img => img.type === 'gallery') || product.images[0];
     const hoverImage = product.images[1];
 
-    const handleWishlistToggle = (e: React.MouseEvent) => {
+    const handleWishlistToggle = async (e: React.MouseEvent) => {
         e.preventDefault();
         if (inWishlist) {
             removeItem(product.id);
+            // Sync with backend if authenticated
+            if (isAuthenticated) {
+                try {
+                    await wishlistApi.removeItem(product.id);
+                    // Invalidate wishlist cache so wishlist page shows updated data
+                    queryClient.invalidateQueries({ queryKey: ['wishlist'] });
+                } catch (error) {
+                    // Revert on error
+                    addItem(product.id);
+                }
+            }
             toast.success('Removed from wishlist');
         } else {
             addItem(product.id);
+            // Sync with backend if authenticated
+            if (isAuthenticated) {
+                try {
+                    await wishlistApi.addItem(product.id);
+                    // Invalidate wishlist cache so wishlist page shows updated data
+                    queryClient.invalidateQueries({ queryKey: ['wishlist'] });
+                } catch (error) {
+                    // Revert on error
+                    removeItem(product.id);
+                }
+            }
             toast.success('Added to wishlist');
         }
     };

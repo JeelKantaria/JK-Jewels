@@ -93,4 +93,18 @@ router.delete('/:productId', async (req: AuthRequest, res: Response) => {
     });
 });
 
+// DELETE /api/wishlist - Clear entire wishlist
+router.delete('/', async (req: AuthRequest, res: Response) => {
+    await prisma.wishlistItem.deleteMany({
+        where: {
+            userId: req.user!.id,
+        },
+    });
+
+    res.json({
+        success: true,
+        message: 'Wishlist cleared',
+    });
+});
+
 export default router;
