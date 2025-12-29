@@ -166,6 +166,47 @@
   .badge-sale {
     @apply absolute top-4 right-4 px-3 py-1 text-xs font-medium bg-accent-800 text-white uppercase tracking-wider;
   }
+
+  /* Rose Gold Metallic Wishlist Heart */
+  .wishlist-heart {
+    @apply absolute top-3 right-3 z-10;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  }
+
+  .wishlist-heart svg {
+    color: #E8B4B8;
+    fill: url(#rose-gold-gradient);
+    stroke: #B76E79;
+    stroke-width: 1;
+  }
+
+  .wishlist-heart::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.6) 50%,
+        transparent 100%);
+    animation: heart-shimmer 3s ease-in-out infinite;
+  }
+
+  @keyframes heart-shimmer {
+
+    0%,
+    100% {
+      left: -100%;
+      opacity: 0;
+    }
+
+    50% {
+      left: 100%;
+      opacity: 1;
+    }
+  }
 }
 
 @layer utilities {

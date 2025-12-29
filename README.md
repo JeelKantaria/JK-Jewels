@@ -22,10 +22,11 @@
 
 ### 🛍️ Customer Features
 - **Product Catalog** - Browse products with advanced filtering (category, metal, purity, price, occasion)
+- **Smart Price Filter** - Custom slider with Indian notation (₹20,00,000), logarithmic scale for better UX
 - **Search** - Live search with auto-suggestions and instant results
 - **Product Details** - Image gallery, size variants, related products
 - **Shopping Cart** - Animated slide-out cart with real-time updates
-- **Wishlist** - Save favorite products for later
+- **Wishlist** - Save favorite products with always-visible heart badges (charcoal/gold design)
 - **User Authentication** - Email/password login with JWT tokens
 - **Account Dashboard** - View orders, manage settings, addresses
 

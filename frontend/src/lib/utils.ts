@@ -43,3 +43,19 @@ export function getInitials(name: string): string {
         .toUpperCase()
         .slice(0, 2);
 }
+
+// Format number to Indian notation with ₹ symbol (e.g., 2000000 → ₹20,00,000)
+export function formatIndianNumber(num: number | string): string {
+    const n = typeof num === 'string' ? parseInt(num) || 0 : num;
+    if (n === 0) return '₹0';
+
+    // Use Indian locale formatting
+    return '₹' + n.toLocaleString('en-IN');
+}
+
+// Parse Indian formatted string back to number (e.g., ₹20,00,000 → 2000000)
+export function parseIndianNumber(str: string): number {
+    // Remove ₹ symbol, commas, and spaces, then parse
+    const cleaned = str.replace(/[₹,\s]/g, '');
+    return parseInt(cleaned) || 0;
+}

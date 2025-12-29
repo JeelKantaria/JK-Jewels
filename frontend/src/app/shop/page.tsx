@@ -7,7 +7,7 @@ import { Filter, X, ChevronDown, ChevronUp, Grid3X3, LayoutGrid, Search } from '
 import { ProductGrid, ProductGridSkeleton } from '@/components/product/product-card';
 import { useQuery } from '@tanstack/react-query';
 import { productsApi, categoriesApi } from '@/lib/api';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, formatIndianNumber, parseIndianNumber } from '@/lib/utils';
 
 const metalTypes = ['Gold', 'Silver', 'Platinum', 'White Gold', 'Rose Gold'];
 const purities = ['22K', '18K', '14K', '925'];
@@ -435,25 +435,26 @@ export default function ShopPage() {
                                                                    [&::-webkit-slider-thumb]:shadow-md"
                                                     />
                                                 </div>
-                                                {/* Price Range Markers */}
-                                                <div className="flex justify-between w-full mt-1 px-0.5">
-                                                    <span className="text-[10px] text-secondary-400">0</span>
-                                                    <span className="text-[10px] text-secondary-400">50K</span>
-                                                    <span className="text-[10px] text-secondary-400">1L</span>
-                                                    <span className="text-[10px] text-secondary-400">2L</span>
-                                                    <span className="text-[10px] text-secondary-400">5L</span>
-                                                    <span className="text-[10px] text-secondary-400">10L</span>
-                                                    <span className="text-[10px] text-secondary-400">1Cr</span>
+                                                {/* Price Range Markers - Absolutely positioned to match slider breakpoints */}
+                                                <div className="relative w-full h-4 mt-1">
+                                                    <span className="absolute text-[10px] text-secondary-400" style={{ left: '0%', transform: 'translateX(0)' }}>₹0</span>
+                                                    <span className="absolute text-[10px] text-secondary-400" style={{ left: '25%', transform: 'translateX(-50%)' }}>1L</span>
+                                                    <span className="absolute text-[10px] text-secondary-400" style={{ left: '45%', transform: 'translateX(-50%)' }}>2L</span>
+                                                    <span className="absolute text-[10px] text-secondary-400" style={{ left: '65%', transform: 'translateX(-50%)' }}>5L</span>
+                                                    <span className="absolute text-[10px] text-secondary-400" style={{ left: '100%', transform: 'translateX(-100%)' }}>1Cr</span>
                                                 </div>
                                                 {/* Input Fields */}
                                                 <div className="flex items-center gap-2">
                                                     <div className="flex-1">
                                                         <label className="text-xs text-secondary-500">Min</label>
                                                         <input
-                                                            type="number"
-                                                            value={customMinPrice}
-                                                            onChange={(e) => setCustomMinPrice(e.target.value)}
-                                                            placeholder="0"
+                                                            type="text"
+                                                            value={formatIndianNumber(customMinPrice)}
+                                                            onChange={(e) => {
+                                                                const parsed = parseIndianNumber(e.target.value);
+                                                                setCustomMinPrice(parsed.toString());
+                                                            }}
+                                                            placeholder="₹0"
                                                             className="w-full px-2 py-1 text-sm border border-cream-300 rounded 
                                                                        focus:outline-none focus:border-primary-500"
                                                         />
@@ -462,10 +463,13 @@ export default function ShopPage() {
                                                     <div className="flex-1">
                                                         <label className="text-xs text-secondary-500">Max</label>
                                                         <input
-                                                            type="number"
-                                                            value={customMaxPrice}
-                                                            onChange={(e) => setCustomMaxPrice(e.target.value)}
-                                                            placeholder="10 Cr"
+                                                            type="text"
+                                                            value={formatIndianNumber(customMaxPrice)}
+                                                            onChange={(e) => {
+                                                                const parsed = parseIndianNumber(e.target.value);
+                                                                setCustomMaxPrice(parsed.toString());
+                                                            }}
+                                                            placeholder="₹1,00,00,000"
                                                             className="w-full px-2 py-1 text-sm border border-cream-300 rounded 
                                                                        focus:outline-none focus:border-primary-500"
                                                         />

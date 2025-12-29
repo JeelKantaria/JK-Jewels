@@ -120,22 +120,43 @@ export function ProductCard({ product }: ProductCardProps) {
                             <span className="badge-new">New</span>
                         )}
 
+                        {/* Wishlist Badge - Black/Charcoal with Gold Accent */}
+                        {inWishlist && (
+                            <span className="wishlist-heart overflow-hidden">
+                                <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <linearGradient id="charcoal-gold-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" stopColor="#454545" />
+                                            <stop offset="40%" stopColor="#1A1A1A" />
+                                            <stop offset="60%" stopColor="#2d2d2d" />
+                                            <stop offset="100%" stopColor="#454545" />
+                                        </linearGradient>
+                                    </defs>
+                                    <path
+                                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                                        fill="url(#charcoal-gold-gradient)"
+                                        stroke="#C9A962"
+                                        strokeWidth="1.5"
+                                    />
+                                </svg>
+                            </span>
+                        )}
+
                         {/* Quick Actions */}
                         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2
                           opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0
                           transition-all duration-300">
-                            <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={handleWishlistToggle}
-                                className={`w-10 h-10 flex items-center justify-center bg-white shadow-lg
-                          hover:bg-primary-500 transition-colors ${inWishlist ? 'text-accent-800' : 'text-secondary-900'
-                                    }`}
-                                aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+                            {/* View */}
+                            <Link
+                                href={`/products/${product.slug}`}
+                                className="w-10 h-10 flex items-center justify-center bg-white shadow-lg
+                         hover:bg-primary-500 transition-colors"
+                                aria-label="Quick view"
                             >
-                                <Heart size={18} fill={inWishlist ? 'currentColor' : 'none'} />
-                            </motion.button>
+                                <Eye size={18} />
+                            </Link>
 
+                            {/* Add to Cart */}
                             <motion.button
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.95 }}
@@ -147,14 +168,18 @@ export function ProductCard({ product }: ProductCardProps) {
                                 <ShoppingBag size={18} />
                             </motion.button>
 
-                            <Link
-                                href={`/products/${product.slug}`}
-                                className="w-10 h-10 flex items-center justify-center bg-white shadow-lg
-                         hover:bg-primary-500 transition-colors"
-                                aria-label="Quick view"
+                            {/* Wishlist */}
+                            <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={handleWishlistToggle}
+                                className={`w-10 h-10 flex items-center justify-center bg-white shadow-lg
+                          hover:bg-primary-500 transition-colors ${inWishlist ? 'text-accent-800' : 'text-secondary-900'
+                                    }`}
+                                aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
                             >
-                                <Eye size={18} />
-                            </Link>
+                                <Heart size={18} fill={inWishlist ? 'currentColor' : 'none'} />
+                            </motion.button>
                         </div>
                     </div>
 

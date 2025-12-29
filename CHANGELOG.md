@@ -5,6 +5,35 @@ All notable changes to the J.K. Jewels project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2024-12-29
+
+### Added
+
+#### Shop Page Enhancements
+- **Custom Price Range Slider** with piecewise logarithmic scale for better UX
+- **Indian Number Formatting** in price inputs (₹20,00,000 format with rupee symbol)
+- **Accurately Positioned Price Labels** matching slider breakpoints (₹0, 1L, 2L, 5L, 1Cr)
+
+#### Product Card Improvements
+- **Always-Visible Wishlist Badge** - Charcoal heart with gold accent outline
+- **Shimmer Sweep Animation** on wishlist heart (periodic shine effect)
+- **Reordered Quick Actions** - View, Add to Cart, Wishlist (left to right)
+
+#### Utility Functions
+- `formatIndianNumber()` - Formats numbers to Indian notation (e.g., 2000000 → ₹20,00,000)
+- `parseIndianNumber()` - Parses Indian formatted strings back to numbers
+
+### Fixed
+
+- **Categories 404 Error** - Fixed header navigation link from non-existent `/categories` to `/shop`
+
+### Changed
+
+- **Wishlist Heart Design** - Updated from ruby circle badge to elegant charcoal/gold metallic heart
+- **Price Filter UX** - Labels now align precisely with slider thumb positions
+
+---
+
 ## [1.0.0] - 2024-12-29
 
 ### Added

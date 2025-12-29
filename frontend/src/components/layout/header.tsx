@@ -18,7 +18,7 @@ const navigation = [
     { name: 'Shop All', href: '/shop' },
     {
         name: 'Categories',
-        href: '/categories',
+        href: '/shop',
         children: [
             { name: 'Rings', href: '/shop?category=rings' },
             { name: 'Necklaces', href: '/shop?category=necklaces' },
