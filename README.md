@@ -44,8 +44,9 @@
 - **Redis** for session caching
 - **JWT** authentication with refresh tokens
 - **TypeScript** throughout the codebase
-- **React Query** for server state management
+- **React Query** for server state management with global error handling
 - **Zustand** for client state management
+- **Error Handling** - React Error Boundary, retry logic, user-friendly error messages
 
 ## 🏗️ Project Structure
 

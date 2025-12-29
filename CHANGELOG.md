@@ -5,6 +5,23 @@ All notable changes to the J.K. Jewels project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.2] - 2025-12-29
+
+### Added
+
+#### Frontend Error Handling
+- **Centralized Error Utilities** - New `lib/errors.ts` with `getErrorMessage()`, `isNetworkError()`, and typed API error codes
+- **Global Mutation Error Handler** - React Query `MutationCache` shows toast for failed mutations without custom handlers
+- **Query Retry Logic** - Smart retry with exponential backoff, skips retries for network errors
+- **Error Boundary** - Wraps app content to catch React rendering errors with fallback UI
+
+### Changed
+- **Cart Drawer** - Added `onError` callbacks to update/remove mutations with user-friendly messages
+- **Shop Page** - Added error state with retry button when products fail to load
+- **Search Modal** - Added error display with retry button when search fails
+
+---
+
 ## [1.2.1] - 2025-12-29
 
 ### Changed

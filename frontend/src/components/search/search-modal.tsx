@@ -18,7 +18,7 @@ export function SearchModal() {
 
     const debouncedQuery = useDebounce(query, 300);
 
-    const { data: results, isLoading } = useQuery({
+    const { data: results, isLoading, error: searchError, refetch } = useQuery({
         queryKey: ['search', debouncedQuery],
         queryFn: async () => {
             if (!debouncedQuery || debouncedQuery.length < 2) return [];
@@ -98,7 +98,19 @@ export function SearchModal() {
                             {/* Results */}
                             {query.length >= 2 && (
                                 <div className="mt-6">
-                                    {results && results.length > 0 ? (
+                                    {searchError ? (
+                                        <div className="text-center py-8">
+                                            <p className="text-secondary-500 mb-3">
+                                                Search failed. Please try again.
+                                            </p>
+                                            <button
+                                                onClick={() => refetch()}
+                                                className="text-primary-600 hover:text-primary-700 font-medium"
+                                            >
+                                                Retry search
+                                            </button>
+                                        </div>
+                                    ) : results && results.length > 0 ? (
                                         <>
                                             <p className="text-sm text-secondary-500 mb-4">
                                                 {results.length} result{results.length !== 1 ? 's' : ''} found

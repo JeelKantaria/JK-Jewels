@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Filter, X, ChevronDown, ChevronUp, Grid3X3, LayoutGrid, Search } from 'lucide-react';
 import { ProductGrid, ProductGridSkeleton } from '@/components/product/product-card';
+import { InlineError } from '@/components/error-boundary';
 import { useQuery } from '@tanstack/react-query';
 import { productsApi, categoriesApi } from '@/lib/api';
 import { formatPrice, formatIndianNumber, parseIndianNumber } from '@/lib/utils';
@@ -62,7 +63,7 @@ export default function ShopPage() {
     });
 
     // Fetch products
-    const { data: productsData, isLoading } = useQuery({
+    const { data: productsData, isLoading, error: productsError, refetch: refetchProducts } = useQuery({
         queryKey: ['products', { category, metalType, purity, occasion, minPrice, maxPrice, sort, order, page, newArrivals, featured, search }],
         queryFn: async () => {
             const params: Record<string, string> = { page: page.toString(), limit: '12' };
@@ -706,6 +707,11 @@ export default function ShopPage() {
                         {/* Products Grid */}
                         {isLoading ? (
                             <ProductGridSkeleton count={12} />
+                        ) : productsError ? (
+                            <InlineError
+                                message="Failed to load products. Please check your connection and try again."
+                                onRetry={() => refetchProducts()}
+                            />
                         ) : productsData?.products?.length > 0 ? (
                             <>
                                 <ProductGrid products={productsData.products} columns={3} />

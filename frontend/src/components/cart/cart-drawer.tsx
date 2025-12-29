@@ -30,6 +30,9 @@ export function CartDrawer() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['cart'] });
         },
+        onError: () => {
+            toast.error('Failed to update cart. Please try again.');
+        },
     });
 
     const removeMutation = useMutation({
@@ -37,6 +40,9 @@ export function CartDrawer() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['cart'] });
             toast.success('Item removed');
+        },
+        onError: () => {
+            toast.error('Failed to remove item. Please try again.');
         },
     });
 

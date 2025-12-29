@@ -1,10 +1,13 @@
 'use client';
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, MutationCache } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/lib/store';
 import { authApi } from '@/lib/api';
+import { getErrorMessage, isNetworkError } from '@/lib/errors';
+import { ErrorBoundary } from '@/components/error-boundary';
 import Cookies from 'js-cookie';
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -46,16 +49,38 @@ export function Providers({ children }: { children: React.ReactNode }) {
                     queries: {
                         staleTime: 60 * 1000, // 1 minute
                         refetchOnWindowFocus: false,
+                        retry: (failureCount, error) => {
+                            // Don't retry on network errors or 4xx errors
+                            if (isNetworkError(error)) return false;
+                            // Retry up to 2 times for other errors
+                            return failureCount < 2;
+                        },
+                        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+                    },
+                    mutations: {
+                        retry: false, // Don't retry mutations automatically
                     },
                 },
+                // Global mutation error handler
+                mutationCache: new MutationCache({
+                    onError: (error, _variables, _context, mutation) => {
+                        // Only show toast if mutation doesn't have its own onError handler
+                        if (!mutation.options.onError) {
+                            const message = getErrorMessage(error);
+                            toast.error(message);
+                        }
+                    },
+                }),
             })
     );
 
     return (
         <QueryClientProvider client={queryClient}>
-            <AuthProvider>
-                {children}
-            </AuthProvider>
+            <ErrorBoundary>
+                <AuthProvider>
+                    {children}
+                </AuthProvider>
+            </ErrorBoundary>
             <Toaster
                 position="top-center"
                 toastOptions={{
