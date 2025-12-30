@@ -434,13 +434,35 @@ export default function CheckoutPage() {
 
                             {/* Trust Badges */}
                             <div className="mt-6 pt-6 border-t border-cream-200">
-                                <div className="flex items-center gap-3 text-sm text-secondary-600">
-                                    <Shield size={18} className="text-primary-600" />
-                                    <span>Secure Checkout</span>
-                                </div>
-                                <div className="flex items-center gap-3 text-sm text-secondary-600 mt-2">
-                                    <Truck size={18} className="text-primary-600" />
-                                    <span>Free shipping on orders above ₹10,000</span>
+                                <p className="text-xs text-secondary-500 uppercase tracking-wider mb-3">Why shop with us</p>
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-3 text-sm text-secondary-600">
+                                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <Shield size={16} className="text-green-600" />
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-secondary-800">SSL Encrypted</p>
+                                            <p className="text-xs text-secondary-500">256-bit secure checkout</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 text-sm text-secondary-600">
+                                        <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <Check size={16} className="text-primary-600" />
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-secondary-800">BIS Hallmarked</p>
+                                            <p className="text-xs text-secondary-500">100% certified gold & silver</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 text-sm text-secondary-600">
+                                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <Truck size={16} className="text-blue-600" />
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-secondary-800">Free Insured Shipping</p>
+                                            <p className="text-xs text-secondary-500">On orders above ₹10,000</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

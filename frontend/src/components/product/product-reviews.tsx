@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, ThumbsUp, User, Loader2, AlertCircle, Check } from 'lucide-react';
+import { Star, ThumbsUp, User, Loader2, AlertCircle, Check, ImageIcon, X } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/lib/store';
 import { reviewsApi } from '@/lib/api';
@@ -14,6 +15,7 @@ interface Review {
     rating: number;
     title?: string;
     comment?: string;
+    images?: string[];
     isVerified: boolean;
     createdAt: string;
     user: {
@@ -42,6 +44,8 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
     const [hoverRating, setHoverRating] = useState(0);
     const [title, setTitle] = useState('');
     const [comment, setComment] = useState('');
+    const [imageUrl, setImageUrl] = useState('');
+    const [images, setImages] = useState<string[]>([]);
 
     // Fetch reviews
     const { data, isLoading, error } = useQuery({
@@ -54,7 +58,7 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
 
     // Submit review mutation
     const submitMutation = useMutation({
-        mutationFn: () => reviewsApi.createReview(productId, { rating, title, comment }),
+        mutationFn: () => reviewsApi.createReview(productId, { rating, title, comment, images }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['reviews', productId] });
             toast.success('Review submitted successfully!');
@@ -62,6 +66,8 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
             setRating(0);
             setTitle('');
             setComment('');
+            setImages([]);
+            setImageUrl('');
         },
         onError: (error: any) => {
             toast.error(error.response?.data?.message || 'Failed to submit review');
@@ -204,8 +210,8 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
                                                 <Star
                                                     size={28}
                                                     className={`transition-colors ${star <= (hoverRating || rating)
-                                                            ? 'fill-primary-500 text-primary-500'
-                                                            : 'text-cream-400 hover:text-cream-500'
+                                                        ? 'fill-primary-500 text-primary-500'
+                                                        : 'text-cream-400 hover:text-cream-500'
                                                         }`}
                                                 />
                                             </button>
@@ -243,6 +249,71 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
                                         rows={4}
                                         maxLength={1000}
                                     />
+                                </div>
+
+                                {/* Image URL Input */}
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-secondary-700 mb-1">
+                                        <ImageIcon size={16} className="inline mr-1" />
+                                        Add Product Photos (Optional)
+                                    </label>
+                                    <p className="text-xs text-secondary-400 mb-2">
+                                        Paste image URLs (max 5 images)
+                                    </p>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="url"
+                                            value={imageUrl}
+                                            onChange={(e) => setImageUrl(e.target.value)}
+                                            placeholder="https://example.com/image.jpg"
+                                            className="flex-1 px-4 py-2 border border-cream-300 focus:border-primary-500 
+                                                     focus:ring-1 focus:ring-primary-500 outline-none text-sm"
+                                            disabled={images.length >= 5}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (imageUrl.trim() && images.length < 5) {
+                                                    try {
+                                                        new URL(imageUrl); // Validate URL
+                                                        setImages([...images, imageUrl.trim()]);
+                                                        setImageUrl('');
+                                                    } catch {
+                                                        toast.error('Please enter a valid URL');
+                                                    }
+                                                }
+                                            }}
+                                            disabled={!imageUrl.trim() || images.length >= 5}
+                                            className="px-4 py-2 bg-secondary-900 text-cream-100 text-sm 
+                                                     hover:bg-secondary-800 transition-colors disabled:opacity-50"
+                                        >
+                                            Add
+                                        </button>
+                                    </div>
+
+                                    {/* Image Preview Grid */}
+                                    {images.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 mt-3">
+                                            {images.map((img, index) => (
+                                                <div key={index} className="relative w-16 h-16 group">
+                                                    <Image
+                                                        src={img}
+                                                        alt={`Review image ${index + 1}`}
+                                                        fill
+                                                        className="object-cover rounded"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setImages(images.filter((_, i) => i !== index))}
+                                                        className="absolute -top-2 -right-2 w-5 h-5 bg-accent-700 text-white rounded-full 
+                                                                 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        <X size={12} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="flex gap-4">
@@ -341,6 +412,22 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
 
                                     {review.comment && (
                                         <p className="text-secondary-600">{review.comment}</p>
+                                    )}
+
+                                    {/* Review Images */}
+                                    {review.images && review.images.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 mt-4">
+                                            {review.images.map((img, index) => (
+                                                <div key={index} className="relative w-20 h-20">
+                                                    <Image
+                                                        src={img}
+                                                        alt={`Review image ${index + 1}`}
+                                                        fill
+                                                        className="object-cover rounded"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
                                     )}
 
                                     {/* Delete button for own review */}

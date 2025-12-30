@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Heart, ShoppingBag, Eye } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -24,10 +25,12 @@ interface ProductCardProps {
         category?: { name: string; slug: string };
         avgRating?: number;
         _count?: { reviews: number };
+        variants?: { id: string; size: string; stockQuantity: number }[];
     };
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+    const router = useRouter();
     const queryClient = useQueryClient();
     const { addItem, removeItem, isInWishlist } = useWishlistStore();
     const { isAuthenticated } = useAuthStore();
@@ -75,8 +78,31 @@ export function ProductCard({ product }: ProductCardProps) {
             toast.error('Please login to add to cart');
             return;
         }
+
+        const variants = product.variants || [];
+        const availableVariants = variants.filter(v => v.stockQuantity > 0);
+
+        // If product has multiple variants, redirect to product page for selection
+        if (variants.length > 1) {
+            toast('Please select a size', { icon: '📏' });
+            router.push(`/products/${product.slug}`);
+            return;
+        }
+
+        // If single variant or no variants, add directly
         try {
-            await cartApi.addItem({ productId: product.id });
+            const payload: { productId: string; variantId?: string } = { productId: product.id };
+
+            // If there's exactly one variant, include it
+            if (variants.length === 1) {
+                if (variants[0].stockQuantity <= 0) {
+                    toast.error('This item is out of stock');
+                    return;
+                }
+                payload.variantId = variants[0].id;
+            }
+
+            await cartApi.addItem(payload);
             queryClient.invalidateQueries({ queryKey: ['cart'] });
             toast.success('Added to cart');
         } catch (error: any) {

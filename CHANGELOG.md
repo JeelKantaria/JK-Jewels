@@ -5,6 +5,53 @@ All notable changes to the J.K. Jewels project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2025-12-30
+
+### Added
+
+#### Inventory Management System
+- **Stock Validation** - Validates stock availability before order creation
+- **Automatic Stock Deduction** - Deducts stock when orders are placed (guest & authenticated)
+- **Stock Restoration** - Restores stock when orders are cancelled
+- **Inventory Dashboard** (`/admin/inventory`) - Full inventory management page:
+  - Total variants, low stock, and out-of-stock stats cards
+  - Search by product name or SKU
+  - Filter by: All, Low Stock, Out of Stock
+  - Inline stock editing with save button
+  - Pagination support
+- **Inventory API Endpoints**:
+  - `GET /api/admin/inventory` - List variants with stock levels, search, filters
+  - `PUT /api/admin/inventory/:variantId` - Update individual variant stock
+  - `PUT /api/admin/inventory/bulk` - Bulk stock update
+- **Dashboard Low Stock Alerts** - Added `lowStockProducts`, `outOfStockCount` to admin dashboard API
+
+#### Smart Add-to-Cart
+- **Variant-Aware Cart** - Products with multiple sizes redirect to product page for selection
+- **Single Variant Direct Add** - Products with one size add directly to cart with variantId
+- **Stock Check on Add** - Shows "out of stock" error if variant has no stock
+
+#### Admin Panel Improvements
+- **Inventory Navigation** - Added "Inventory" link with Warehouse icon to admin sidebar
+- **Admin Profile Link** - Added "Admin Panel" link in account page for admin users
+- **Indian Rupee Icon** - Changed DollarSign to IndianRupee for revenue displays
+
+### Changed
+
+#### Jewel Tones Theme
+- **Dashboard Stats Cards** - Updated to jewel-inspired colors:
+  - Revenue: Gold (`primary-500`)
+  - Orders: Emerald (`emerald-600`)
+  - Products: Sapphire (`sky-600`)
+  - Customers: Ruby (`accent-700`)
+- **Inventory Page** - Matching jewel tones for stat cards and status badges
+- **Products Page** - Active status uses Emerald instead of green
+- **Analytics Page** - Charts and stats updated with jewel tones
+
+### Fixed
+- **Cart Counter Badge** - Fixed cart item count not updating in header after adding products
+- **Cart Store Sync** - Added useEffect to sync cart API response to Zustand store
+- **Products API** - Added variants data to product list response for smart cart feature
+
 ## [1.4.0] - 2025-12-30
 
 ### Added

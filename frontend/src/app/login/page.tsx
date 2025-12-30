@@ -52,7 +52,13 @@ export default function LoginPage() {
             const { user, accessToken, refreshToken } = response.data.data;
             login(user, accessToken, refreshToken);
             toast.success('Welcome back!');
-            router.push('/');
+
+            // Redirect admin users to admin panel, customers to homepage
+            if (user.role === 'ADMIN') {
+                router.push('/admin');
+            } else {
+                router.push('/');
+            }
         } catch (error: any) {
             toast.error(error.response?.data?.message || 'Login failed');
         } finally {
@@ -102,8 +108,8 @@ export default function LoginPage() {
                         <button
                             onClick={() => setIsLogin(true)}
                             className={`flex-1 pb-3 text-center font-medium transition-colors border-b-2 ${isLogin
-                                    ? 'border-primary-500 text-secondary-900'
-                                    : 'border-transparent text-secondary-400 hover:text-secondary-600'
+                                ? 'border-primary-500 text-secondary-900'
+                                : 'border-transparent text-secondary-400 hover:text-secondary-600'
                                 }`}
                         >
                             Sign In
@@ -111,8 +117,8 @@ export default function LoginPage() {
                         <button
                             onClick={() => setIsLogin(false)}
                             className={`flex-1 pb-3 text-center font-medium transition-colors border-b-2 ${!isLogin
-                                    ? 'border-primary-500 text-secondary-900'
-                                    : 'border-transparent text-secondary-400 hover:text-secondary-600'
+                                ? 'border-primary-500 text-secondary-900'
+                                : 'border-transparent text-secondary-400 hover:text-secondary-600'
                                 }`}
                         >
                             Create Account

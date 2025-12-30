@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { User, Package, Heart, MapPin, Settings, LogOut, ChevronRight } from 'lucide-react';
+import { User, Package, Heart, MapPin, Settings, LogOut, ChevronRight, Shield } from 'lucide-react';
 import { useAuthStore, useWishlistStore } from '@/lib/store';
 import { useQuery } from '@tanstack/react-query';
 import { ordersApi, authApi } from '@/lib/api';
@@ -92,6 +92,19 @@ export default function AccountPage() {
                                         </span>
                                     </Link>
                                 ))}
+
+                                {/* Admin Panel Link - Only for Admins */}
+                                {user.role === 'ADMIN' && (
+                                    <Link
+                                        href="/admin"
+                                        className="flex items-center gap-3 p-3 text-primary-700
+                                                 bg-primary-50 hover:bg-primary-100 transition-colors"
+                                    >
+                                        <Shield size={20} className="text-primary-600" />
+                                        <span className="font-medium">Admin Panel</span>
+                                    </Link>
+                                )}
+
                                 <button
                                     onClick={handleLogout}
                                     className="flex items-center gap-3 p-3 text-accent-800

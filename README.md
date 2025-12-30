@@ -25,13 +25,21 @@
 - **Smart Price Filter** - Custom slider with Indian notation (₹20,00,000), logarithmic scale for better UX
 - **Search** - Live search with auto-suggestions and instant results
 - **Product Details** - Image gallery, size variants, related products
-- **Shopping Cart** - Animated slide-out cart with real-time updates
+- **Smart Add-to-Cart** - Single-size products add directly, multi-size redirect to product page
+- **Shopping Cart** - Animated slide-out cart with real-time counter badge in header
 - **Wishlist** - Save favorite products with always-visible heart badges (golden/ruby design)
 - **Checkout** - Complete checkout with address selection, promo codes, order notes
 - **Promo Codes** - Configurable discount codes with usage limits, expiry, min order rules
 - **Order Tracking** - View order status, timeline, items, and cancel pending orders
 - **User Authentication** - Email/password login with JWT tokens
 - **Account Dashboard** - View orders, manage settings, addresses
+
+### 🛠️ Admin Features
+- **Dashboard** - Revenue, orders, products, customers stats with jewel-toned design
+- **Inventory Management** - Track stock levels, filter low/out-of-stock, inline editing
+- **Products Management** - Add, edit, delete products with variant support
+- **Orders Management** - View and process customer orders
+- **Analytics** - Charts for revenue and orders trends
 
 ### 🎨 Design Excellence
 - Premium, elegant UI with micro-interactions

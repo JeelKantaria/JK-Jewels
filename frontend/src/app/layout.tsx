@@ -63,8 +63,30 @@ export default function RootLayout({
 }: {
     children: React.ReactNode;
 }) {
+    const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
     return (
         <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+            <head>
+                {/* Google Analytics - Add your GA4 Measurement ID to .env.local as NEXT_PUBLIC_GA_MEASUREMENT_ID */}
+                {gaId && (
+                    <>
+                        <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} />
+                        <script
+                            dangerouslySetInnerHTML={{
+                                __html: `
+                                    window.dataLayer = window.dataLayer || [];
+                                    function gtag(){dataLayer.push(arguments);}
+                                    gtag('js', new Date());
+                                    gtag('config', '${gaId}', {
+                                        page_path: window.location.pathname,
+                                    });
+                                `,
+                            }}
+                        />
+                    </>
+                )}
+            </head>
             <body className="min-h-screen flex flex-col">
                 <Providers>
                     <Header />

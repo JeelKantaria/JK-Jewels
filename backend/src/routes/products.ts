@@ -105,6 +105,10 @@ router.get('/', optionalAuth as any, asyncHandler(async (req: Request, res: Resp
                     orderBy: { displayOrder: 'asc' },
                     take: 2,
                 },
+                variants: {
+                    select: { id: true, size: true, stockQuantity: true },
+                    orderBy: { size: 'asc' },
+                },
                 _count: { select: { reviews: true } },
             },
         }),

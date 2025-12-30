@@ -12,6 +12,7 @@ const createReviewSchema = z.object({
     rating: z.number().int().min(1, 'Rating must be at least 1').max(5, 'Rating cannot exceed 5'),
     title: z.string().max(100, 'Title cannot exceed 100 characters').optional(),
     comment: z.string().max(1000, 'Comment cannot exceed 1000 characters').optional(),
+    images: z.array(z.string().url('Invalid image URL')).max(5, 'Maximum 5 images allowed').optional(),
 });
 
 // GET /api/reviews/product/:productId - Get reviews for a product
@@ -95,7 +96,7 @@ router.post('/product/:productId', authenticate as unknown as RequestHandler, as
         throw validationResult.error;
     }
 
-    const { rating, title, comment } = validationResult.data;
+    const { rating, title, comment, images } = validationResult.data;
 
     // Verify product exists
     const product = await prisma.product.findUnique({
@@ -133,6 +134,7 @@ router.post('/product/:productId', authenticate as unknown as RequestHandler, as
             rating,
             title,
             comment,
+            images: images || [],
             isVerified: !!hasPurchased, // Mark as verified if user purchased
             isApproved: true, // Auto-approve for now, can add moderation later
         },

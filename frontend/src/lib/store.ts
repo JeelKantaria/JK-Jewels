@@ -136,17 +136,25 @@ export const useCartStore = create<CartState>()((set) => ({
     },
 
     updateQuantity: (itemId, quantity) => {
-        set((state) => ({
-            items: state.items.map((item) =>
+        set((state) => {
+            const newItems = state.items.map((item) =>
                 item.id === itemId ? { ...item, quantity } : item
-            ),
-        }));
+            );
+            return {
+                items: newItems,
+                itemCount: newItems.reduce((sum, item) => sum + item.quantity, 0),
+            };
+        });
     },
 
     removeItem: (itemId) => {
-        set((state) => ({
-            items: state.items.filter((item) => item.id !== itemId),
-        }));
+        set((state) => {
+            const newItems = state.items.filter((item) => item.id !== itemId);
+            return {
+                items: newItems,
+                itemCount: newItems.reduce((sum, item) => sum + item.quantity, 0),
+            };
+        });
     },
 
     clearCart: () => {

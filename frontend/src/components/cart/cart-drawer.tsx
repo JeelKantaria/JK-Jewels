@@ -5,15 +5,17 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useUIStore, useAuthStore } from '@/lib/store';
+import { useUIStore, useAuthStore, useCartStore } from '@/lib/store';
 import { cartApi } from '@/lib/api';
 import { formatPrice } from '@/lib/utils';
 import toast from 'react-hot-toast';
+import { useEffect } from 'react';
 
 export function CartDrawer() {
     const queryClient = useQueryClient();
     const { isCartOpen, toggleCart } = useUIStore();
     const { isAuthenticated } = useAuthStore();
+    const { setCart } = useCartStore();
 
     const { data: cart, isLoading } = useQuery({
         queryKey: ['cart'],
@@ -21,8 +23,20 @@ export function CartDrawer() {
             const response = await cartApi.getCart();
             return response.data.data;
         },
-        enabled: isAuthenticated && isCartOpen,
+        enabled: isAuthenticated,
     });
+
+    // Sync cart data to zustand store for header badge
+    useEffect(() => {
+        if (cart) {
+            setCart({
+                items: cart.items || [],
+                subtotal: cart.subtotal || 0,
+                tax: cart.tax || 0,
+                total: cart.total || 0,
+            });
+        }
+    }, [cart, setCart]);
 
     const updateMutation = useMutation({
         mutationFn: ({ itemId, quantity }: { itemId: string; quantity: number }) =>

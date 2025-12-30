@@ -188,6 +188,7 @@ export const reviewsApi = {
         rating: number;
         title?: string;
         comment?: string;
+        images?: string[];
     }) => api.post(`/reviews/product/${productId}`, data),
 
     deleteReview: (reviewId: string) =>

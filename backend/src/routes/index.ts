@@ -8,6 +8,8 @@ import orderRoutes from './orders.js';
 import addressRoutes from './addresses.js';
 import reviewRoutes from './reviews.js';
 import promoRoutes from './promo.js';
+import contactRoutes from './contact.js';
+import adminRoutes from './admin.js';
 
 const router = Router();
 
@@ -30,5 +32,7 @@ router.use('/orders', orderRoutes);
 router.use('/addresses', addressRoutes);
 router.use('/reviews', reviewRoutes);
 router.use('/promo', promoRoutes);
+router.use('/contact', contactRoutes);
+router.use('/admin', adminRoutes);
 
 export default router;

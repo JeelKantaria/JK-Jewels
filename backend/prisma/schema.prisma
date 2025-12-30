@@ -244,8 +244,23 @@ model WishlistItem {
 model Order {
   id              String        @id @default(uuid())
   orderNumber     String        @unique @map("order_number")
-  userId          String        @map("user_id")
-  user            User          @relation(fields: [userId], references: [id])
+  
+  // User (optional for guest checkout)
+  userId          String?       @map("user_id")
+  user            User?         @relation(fields: [userId], references: [id])
+  
+  // Guest info (used when no user)
+  guestEmail      String?       @map("guest_email")
+  guestName       String?       @map("guest_name")
+  guestPhone      String?       @map("guest_phone")
+  
+  // Guest address (stored directly for guest orders)
+  guestAddressLine1   String?   @map("guest_address_line_1")
+  guestAddressLine2   String?   @map("guest_address_line_2")
+  guestCity           String?   @map("guest_city")
+  guestState          String?   @map("guest_state")
+  guestPincode        String?   @map("guest_pincode")
+  guestCountry        String?   @map("guest_country")
   
   // Amounts
   subtotal        Decimal       @db.Decimal(12, 2)
@@ -258,9 +273,9 @@ model Order {
   status          OrderStatus   @default(PENDING)
   paymentStatus   PaymentStatus @default(PENDING) @map("payment_status")
   
-  // Shipping
-  shippingAddressId String      @map("shipping_address_id")
-  shippingAddress   Address     @relation(fields: [shippingAddressId], references: [id])
+  // Shipping (optional for registered users, null for guests who use inline address)
+  shippingAddressId String?     @map("shipping_address_id")
+  shippingAddress   Address?    @relation(fields: [shippingAddressId], references: [id])
   
   // Payment
   paymentMethod   String?       @map("payment_method")
@@ -399,3 +414,20 @@ model PromoCodeUsage {
   @@map("promo_code_usages")
 }
 
+// =============================================
+// CONTACT MESSAGES
+// =============================================
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  isRead    Boolean  @default(false) @map("is_read")
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  @@map("contact_messages")
+}
