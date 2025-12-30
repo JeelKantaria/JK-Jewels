@@ -79,7 +79,7 @@ describe('POST /api/promo/validate', () => {
             .send({ code: 'FLAT500', cartTotal: 10000 });
 
         expect(response.status).toBe(401);
-    });
+    }, 60000); // Increase timeout for cold start
 
     it('should return 400 for missing code', async () => {
         const response = await request(app)
