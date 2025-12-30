@@ -632,6 +632,30 @@ router.get('/inventory', asyncHandler(async (req: Request, res: Response) => {
     });
 }));
 
+// PUT /api/admin/inventory/bulk - Bulk update stock (MUST be before :variantId route)
+router.put('/inventory/bulk', asyncHandler(async (req: Request, res: Response) => {
+    const { updates } = req.body;
+
+    if (!Array.isArray(updates) || updates.length === 0) {
+        throw new AppError('Updates array is required', 400, ErrorCodes.VALIDATION_ERROR);
+    }
+
+    const results = await prisma.$transaction(
+        updates.map(({ variantId, stockQuantity }: { variantId: string; stockQuantity: number }) =>
+            prisma.productVariant.update({
+                where: { id: variantId },
+                data: { stockQuantity },
+            })
+        )
+    );
+
+    res.json({
+        success: true,
+        message: `Updated stock for ${results.length} variants`,
+        data: { updated: results.length },
+    });
+}));
+
 // PUT /api/admin/inventory/:variantId - Update variant stock
 router.put('/inventory/:variantId', asyncHandler(async (req: Request, res: Response) => {
     const { variantId } = req.params;
@@ -653,30 +677,6 @@ router.put('/inventory/:variantId', asyncHandler(async (req: Request, res: Respo
         success: true,
         message: `Stock updated for ${variant.product.name} (Size: ${variant.size})`,
         data: variant,
-    });
-}));
-
-// PUT /api/admin/inventory/bulk - Bulk update stock
-router.put('/inventory/bulk', asyncHandler(async (req: Request, res: Response) => {
-    const { updates } = req.body;
-
-    if (!Array.isArray(updates) || updates.length === 0) {
-        throw new AppError('Updates array is required', 400, ErrorCodes.VALIDATION_ERROR);
-    }
-
-    const results = await prisma.$transaction(
-        updates.map(({ variantId, stockQuantity }: { variantId: string; stockQuantity: number }) =>
-            prisma.productVariant.update({
-                where: { id: variantId },
-                data: { stockQuantity },
-            })
-        )
-    );
-
-    res.json({
-        success: true,
-        message: `Updated stock for ${results.length} variants`,
-        data: { updatedCount: results.length },
     });
 }));
 
