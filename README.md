@@ -38,8 +38,12 @@
 - **Dashboard** - Revenue, orders, products, customers stats with jewel-toned design
 - **Inventory Management** - Track stock levels, filter low/out-of-stock, inline editing
 - **Products Management** - Add, edit, delete products with variant support
-- **Orders Management** - View and process customer orders
-- **Analytics** - Charts for revenue and orders trends
+- **Categories Management** - Add, edit, delete product categories
+- **Metal Types** - Manage metal types (Gold, Silver, Platinum, Rose Gold, etc.)
+- **Purities** - Manage purity levels (24K, 22K, 18K, 925 Sterling, etc.)
+- **Occasions** - Manage occasions (Wedding, Festival, Daily Wear, etc.)
+- **Orders Management** - View and process customer orders with date filters
+- **Analytics** - Charts for revenue and orders trends with custom date ranges
 
 ### 🎨 Design Excellence
 - Premium, elegant UI with micro-interactions

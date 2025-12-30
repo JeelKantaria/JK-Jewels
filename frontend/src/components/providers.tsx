@@ -4,8 +4,9 @@ import { QueryClient, QueryClientProvider, MutationCache } from '@tanstack/react
 import { Toaster } from 'react-hot-toast';
 import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
-import { useAuthStore } from '@/lib/store';
-import { authApi } from '@/lib/api';
+import { useAuthStore, useCartStore } from '@/lib/store';
+import { authApi, cartApi } from '@/lib/api';
+import { useQuery } from '@tanstack/react-query';
 import { getErrorMessage, isNetworkError } from '@/lib/errors';
 import { ErrorBoundary } from '@/components/error-boundary';
 import Cookies from 'js-cookie';
@@ -39,6 +40,28 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [login, logout, setLoading]);
 
     return <>{children}</>;
+}
+
+export function CartSync() {
+    const { isAuthenticated } = useAuthStore();
+    const { setCart } = useCartStore();
+    const { data: cartData } = useQuery({
+        queryKey: ['cart'],
+        queryFn: async () => {
+            const response = await cartApi.getCart();
+            return response.data.data;
+        },
+        enabled: isAuthenticated,
+        staleTime: 0, // Always fetch fresh data on mount/invalidation
+    });
+
+    useEffect(() => {
+        if (cartData) {
+            setCart(cartData);
+        }
+    }, [cartData, setCart]);
+
+    return null;
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -78,6 +101,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <QueryClientProvider client={queryClient}>
             <ErrorBoundary>
                 <AuthProvider>
+                    <CartSync />
                     {children}
                 </AuthProvider>
             </ErrorBoundary>

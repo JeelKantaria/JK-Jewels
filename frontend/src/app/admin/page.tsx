@@ -6,15 +6,14 @@ import {
     ShoppingCart,
     Users,
     IndianRupee,
-    TrendingUp,
     Clock,
     AlertCircle,
     ArrowUpRight,
     ArrowDownRight
 } from 'lucide-react';
+import Link from 'next/link';
 import { api } from '@/lib/api';
 import { formatPrice } from '@/lib/utils';
-import Link from 'next/link';
 
 interface DashboardStats {
     totalOrders: number;
@@ -28,13 +27,24 @@ interface DashboardStats {
 
 export default function AdminDashboard() {
     // Fetch dashboard stats
-    const { data: stats, isLoading } = useQuery({
+    const { data: stats, isLoading: statsLoading } = useQuery({
         queryKey: ['admin', 'dashboard'],
         queryFn: async () => {
             const response = await api.get('/admin/dashboard');
             return response.data.data as DashboardStats;
         },
     });
+
+    // Fetch analytics comparison for trends
+    const { data: trends, isLoading: trendsLoading } = useQuery({
+        queryKey: ['admin', 'analytics', 'comparison'],
+        queryFn: async () => {
+            const response = await api.get('/admin/analytics/comparison');
+            return response.data.data;
+        },
+    });
+
+    const isLoading = statsLoading || trendsLoading;
 
     if (isLoading) {
         return (
@@ -62,28 +72,41 @@ export default function AdminDashboard() {
         recentMessages: [],
     };
 
+    const formatTrend = (value: number | undefined) => {
+        if (value === undefined) return { value: '0%', isUp: true };
+        const isUp = value >= 0;
+        return {
+            value: `${Math.abs(value)}%`,
+            isUp
+        };
+    };
+
+    const revenueTrend = formatTrend(trends?.revenueGrowth);
+    const ordersTrend = formatTrend(trends?.orderGrowth);
+    const customersTrend = formatTrend(trends?.customerGrowth);
+
     const statCards = [
         {
             title: 'Total Revenue',
             value: formatPrice(displayStats.totalRevenue),
             icon: IndianRupee,
-            trend: '+12.5%',
-            trendUp: true,
+            trend: revenueTrend.value,
+            trendUp: revenueTrend.isUp,
             color: 'bg-primary-500', // Gold
         },
         {
             title: 'Total Orders',
             value: displayStats.totalOrders.toString(),
             icon: ShoppingCart,
-            trend: '+8.2%',
-            trendUp: true,
+            trend: ordersTrend.value,
+            trendUp: ordersTrend.isUp,
             color: 'bg-emerald-600', // Emerald
         },
         {
             title: 'Total Products',
             value: displayStats.totalProducts.toString(),
             icon: Package,
-            trend: '0%',
+            trend: '—', // No trend for products currently
             trendUp: true,
             color: 'bg-sky-600', // Sapphire
         },
@@ -91,8 +114,8 @@ export default function AdminDashboard() {
             title: 'Total Customers',
             value: displayStats.totalCustomers.toString(),
             icon: Users,
-            trend: '+5.1%',
-            trendUp: true,
+            trend: customersTrend.value,
+            trendUp: customersTrend.isUp,
             color: 'bg-accent-700', // Ruby
         },
     ];
@@ -121,15 +144,22 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
                             <div className="mt-4 flex items-center text-sm">
-                                {stat.trendUp ? (
-                                    <ArrowUpRight size={16} className="text-green-500 mr-1" />
-                                ) : (
-                                    <ArrowDownRight size={16} className="text-red-500 mr-1" />
+                                {stat.trend !== '—' && (
+                                    <>
+                                        {stat.trendUp ? (
+                                            <ArrowUpRight size={16} className="text-green-500 mr-1" />
+                                        ) : (
+                                            <ArrowDownRight size={16} className="text-red-500 mr-1" />
+                                        )}
+                                        <span className={stat.trendUp ? 'text-green-500' : 'text-red-500'}>
+                                            {stat.trend}
+                                        </span>
+                                        <span className="text-gray-400 ml-2">vs last month</span>
+                                    </>
                                 )}
-                                <span className={stat.trendUp ? 'text-green-500' : 'text-red-500'}>
-                                    {stat.trend}
-                                </span>
-                                <span className="text-gray-400 ml-2">vs last month</span>
+                                {stat.trend === '—' && (
+                                    <span className="text-gray-400">Total active items</span>
+                                )}
                             </div>
                         </div>
                     );
@@ -171,7 +201,7 @@ export default function AdminDashboard() {
                         {displayStats.recentOrders.length > 0 ? (
                             <div className="space-y-4">
                                 {displayStats.recentOrders.slice(0, 5).map((order: any) => (
-                                    <div key={order.id} className="flex items-center justify-between py-2">
+                                    <div key={order.orderNumber} className="flex items-center justify-between py-2">
                                         <div>
                                             <p className="font-medium text-gray-900">{order.orderNumber}</p>
                                             <p className="text-sm text-gray-500">{order.user?.name || order.guestName}</p>

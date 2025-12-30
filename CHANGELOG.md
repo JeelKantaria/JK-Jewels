@@ -5,6 +5,38 @@ All notable changes to the J.K. Jewels project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2025-12-31
+
+### Added
+
+#### Admin Entity Management
+- **Categories Management** (`/admin/categories`) - Full CRUD for product categories
+- **Metal Types Management** (`/admin/metal-types`) - Manage metal types (Gold, Silver, Platinum, etc.)
+- **Purities Management** (`/admin/purities`) - Manage purity levels (22K, 18K, 925 Sterling, etc.)
+- **Occasions Management** (`/admin/occasions`) - Manage occasions (Wedding, Festival, Daily Wear, etc.)
+- **Database Models** - Added `MetalType`, `Purity`, `Occasion` tables with Prisma migrations
+- **Seed Data** - Pre-populated 5 metal types, 6 purities, 10 occasions
+
+#### Admin Panel Navigation
+- Added sidebar links for Categories, Metal Types, Purities, Occasions
+- Icons: FolderOpen, Gem, Shield, Calendar
+
+#### Product Form Enhancements
+- Category dropdown now fetches from database
+- Metal Type dropdown fetches from `metal_types` table
+- Purity dropdown fetches from `purities` table (shows associated metal)
+- Occasions multi-select with clickable tag chips
+
+#### Analytics & Orders Improvements
+- Custom date range filters on Analytics page
+- Custom date range filters on Orders page with order count display
+
+### Fixed
+- Products without variants now appear in inventory (auto-creates "One Size" variant)
+- Product updates that remove variants no longer break inventory sync
+
+---
+
 ## [1.5.0] - 2025-12-30
 
 ### Added

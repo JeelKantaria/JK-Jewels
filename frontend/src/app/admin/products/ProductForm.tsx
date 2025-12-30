@@ -16,6 +16,7 @@ interface ProductFormData {
     categoryId: string;
     metalType: string;
     purity: string;
+    occasion: string[];
     basePrice: number;
     weight: number;
     isActive: boolean;
@@ -35,8 +36,9 @@ const defaultFormData: ProductFormData = {
     slug: '',
     description: '',
     categoryId: '',
-    metalType: 'Gold',
-    purity: '22K',
+    metalType: '',
+    purity: '',
+    occasion: [],
     basePrice: 0,
     weight: 0,
     isActive: true,
@@ -57,13 +59,31 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
     // Fetch categories
     const { data: categoriesData } = useQuery({
         queryKey: ['categories'],
-        queryFn: async () => {
-            const response = await api.get('/categories');
-            return response.data.data;
-        },
+        queryFn: async () => (await api.get('/categories')).data.data,
+    });
+
+    // Fetch metal types
+    const { data: metalTypesData } = useQuery({
+        queryKey: ['admin', 'metal-types'],
+        queryFn: async () => (await api.get('/admin/metal-types')).data.data,
+    });
+
+    // Fetch purities
+    const { data: puritiesData } = useQuery({
+        queryKey: ['admin', 'purities'],
+        queryFn: async () => (await api.get('/admin/purities')).data.data,
+    });
+
+    // Fetch occasions
+    const { data: occasionsData } = useQuery({
+        queryKey: ['admin', 'occasions'],
+        queryFn: async () => (await api.get('/admin/occasions')).data.data,
     });
 
     const categories = categoriesData || [];
+    const metalTypes = (metalTypesData || []).filter((m: any) => m.isActive);
+    const purities = (puritiesData || []).filter((p: any) => p.isActive);
+    const occasions = (occasionsData || []).filter((o: any) => o.isActive);
 
     // Generate slug from name
     const generateSlug = (name: string) => {
@@ -235,32 +255,34 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Metal Type
+                                Metal Type *
                             </label>
                             <select
                                 value={formData.metalType}
                                 onChange={(e) => setFormData({ ...formData, metalType: e.target.value })}
                                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
+                                required
                             >
-                                <option value="Gold">Gold</option>
-                                <option value="Silver">Silver</option>
-                                <option value="Platinum">Platinum</option>
+                                <option value="">Select metal type</option>
+                                {metalTypes.map((mt: any) => (
+                                    <option key={mt.id} value={mt.name}>{mt.name}</option>
+                                ))}
                             </select>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Purity
+                                Purity *
                             </label>
                             <select
                                 value={formData.purity}
                                 onChange={(e) => setFormData({ ...formData, purity: e.target.value })}
                                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
+                                required
                             >
-                                <option value="24K">24K</option>
-                                <option value="22K">22K</option>
-                                <option value="18K">18K</option>
-                                <option value="14K">14K</option>
-                                <option value="925">925 Sterling</option>
+                                <option value="">Select purity</option>
+                                {purities.map((p: any) => (
+                                    <option key={p.id} value={p.name}>{p.name}{p.metalType ? ` (${p.metalType})` : ''}</option>
+                                ))}
                             </select>
                         </div>
                         <div>
@@ -274,6 +296,34 @@ export default function ProductForm({ productId, initialData }: ProductFormProps
                                 onChange={(e) => setFormData({ ...formData, weight: parseFloat(e.target.value) || 0 })}
                                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
                             />
+                        </div>
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Occasions
+                            </label>
+                            <div className="flex flex-wrap gap-2 p-3 border border-gray-200 rounded-lg min-h-[42px]">
+                                {occasions.map((occ: any) => {
+                                    const isSelected = formData.occasion.includes(occ.name);
+                                    return (
+                                        <button
+                                            key={occ.id}
+                                            type="button"
+                                            onClick={() => {
+                                                if (isSelected) {
+                                                    setFormData({ ...formData, occasion: formData.occasion.filter(o => o !== occ.name) });
+                                                } else {
+                                                    setFormData({ ...formData, occasion: [...formData.occasion, occ.name] });
+                                                }
+                                            }}
+                                            className={`px-3 py-1 text-sm rounded-full transition-colors ${isSelected ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                }`}
+                                        >
+                                            {occ.name}
+                                        </button>
+                                    );
+                                })}
+                                {occasions.length === 0 && <span className="text-gray-400 text-sm">No occasions available</span>}
+                            </div>
                         </div>
                     </div>
                 </div>

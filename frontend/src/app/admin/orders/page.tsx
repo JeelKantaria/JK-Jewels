@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, ShoppingCart, Eye, ChevronDown } from 'lucide-react';
+import { Search, ShoppingCart, Eye, ChevronDown, Calendar, Filter } from 'lucide-react';
 import { api } from '@/lib/api';
 import { formatPrice, formatDate } from '@/lib/utils';
 import Link from 'next/link';
@@ -24,10 +24,55 @@ export default function AdminOrdersPage() {
     const [status, setStatus] = useState('ALL');
     const [page, setPage] = useState(1);
     const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+    const [period, setPeriod] = useState('all');
+    const [fromDate, setFromDate] = useState('');
+    const [toDate, setToDate] = useState('');
 
-    // Fetch orders
+    // Calculate from/to based on period
+    const getDateRange = () => {
+        const now = new Date();
+        let from = '';
+        let to = '';
+
+        switch (period) {
+            case 'day':
+                from = now.toISOString().split('T')[0];
+                to = from;
+                break;
+            case 'week': {
+                const day = now.getDay();
+                const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+                const weekStart = new Date(now.setDate(diff));
+                from = weekStart.toISOString().split('T')[0];
+                to = new Date().toISOString().split('T')[0];
+                break;
+            }
+            case 'month':
+                from = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+                to = new Date().toISOString().split('T')[0];
+                break;
+            case 'quarter': {
+                const currentQuarter = Math.floor(now.getMonth() / 3);
+                from = new Date(now.getFullYear(), currentQuarter * 3, 1).toISOString().split('T')[0];
+                to = new Date().toISOString().split('T')[0];
+                break;
+            }
+            case 'year':
+                from = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
+                to = new Date().toISOString().split('T')[0];
+                break;
+            case 'custom':
+                from = fromDate;
+                to = toDate;
+                break;
+        }
+        return { from, to };
+    };
+
+    const dateRange = getDateRange();
+
     const { data, isLoading } = useQuery({
-        queryKey: ['admin', 'orders', { page, search, status }],
+        queryKey: ['admin', 'orders', { page, search, status, from: dateRange.from, to: dateRange.to }],
         queryFn: async () => {
             const response = await api.get('/admin/orders', {
                 params: {
@@ -35,6 +80,8 @@ export default function AdminOrdersPage() {
                     limit: 20,
                     search: search || undefined,
                     status: status !== 'ALL' ? status : undefined,
+                    from: dateRange.from || undefined,
+                    to: dateRange.to || undefined,
                 },
             });
             return response.data.data;
@@ -67,7 +114,9 @@ export default function AdminOrdersPage() {
             {/* Header */}
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
-                <p className="text-gray-500 mt-1">{pagination.total} orders total</p>
+                <p className="text-gray-500 mt-1">
+                    {pagination.total} orders {period !== 'all' && `for ${period === 'custom' ? 'selected range' : period}`}
+                </p>
             </div>
 
             {/* Filters */}
@@ -98,14 +147,64 @@ export default function AdminOrdersPage() {
                                     setPage(1);
                                 }}
                                 className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${status === s.value
-                                        ? 'bg-secondary-900 text-white'
-                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    ? 'bg-secondary-900 text-white'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
                             >
                                 {s.label}
                             </button>
                         ))}
                     </div>
+                </div>
+
+                {/* Date Filter */}
+                <div className="flex flex-wrap items-center gap-3 mt-4 pt-4 border-t border-gray-100">
+                    <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
+                        <Filter size={16} className="text-gray-500" />
+                        <select
+                            value={period}
+                            onChange={(e) => {
+                                setPeriod(e.target.value);
+                                setPage(1);
+                            }}
+                            className="bg-transparent text-sm font-medium text-gray-700 outline-none cursor-pointer"
+                        >
+                            <option value="all">All Time</option>
+                            <option value="day">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                            <option value="quarter">This Quarter</option>
+                            <option value="year">This Year</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                    </div>
+
+                    {period === 'custom' && (
+                        <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
+                            <Calendar size={16} className="text-gray-500" />
+                            <input
+                                type="date"
+                                value={fromDate}
+                                onChange={(e) => {
+                                    setFromDate(e.target.value);
+                                    setPage(1);
+                                }}
+                                className="bg-transparent text-sm text-gray-700 outline-none"
+                                max={toDate || undefined}
+                            />
+                            <span className="text-gray-400">to</span>
+                            <input
+                                type="date"
+                                value={toDate}
+                                onChange={(e) => {
+                                    setToDate(e.target.value);
+                                    setPage(1);
+                                }}
+                                className="bg-transparent text-sm text-gray-700 outline-none"
+                                min={fromDate || undefined}
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
 

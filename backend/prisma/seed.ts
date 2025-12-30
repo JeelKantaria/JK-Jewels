@@ -65,6 +65,66 @@ async function main() {
     }
     console.log('✅ Categories created:', categories.length);
 
+    // Create Metal Types
+    const metalTypes = [
+        { name: 'Gold', displayOrder: 1 },
+        { name: 'Silver', displayOrder: 2 },
+        { name: 'Platinum', displayOrder: 3 },
+        { name: 'White Gold', displayOrder: 4 },
+        { name: 'Rose Gold', displayOrder: 5 },
+    ];
+
+    for (const mt of metalTypes) {
+        await prisma.metalType.upsert({
+            where: { name: mt.name },
+            update: mt,
+            create: mt,
+        });
+    }
+    console.log('✅ Metal Types created:', metalTypes.length);
+
+    // Create Purities
+    const purities = [
+        { name: '24K', metalType: 'Gold', displayOrder: 1 },
+        { name: '22K', metalType: 'Gold', displayOrder: 2 },
+        { name: '18K', metalType: 'Gold', displayOrder: 3 },
+        { name: '14K', metalType: 'Gold', displayOrder: 4 },
+        { name: '925 Sterling', metalType: 'Silver', displayOrder: 5 },
+        { name: '950 Platinum', metalType: 'Platinum', displayOrder: 6 },
+    ];
+
+    for (const p of purities) {
+        await prisma.purity.upsert({
+            where: { name: p.name },
+            update: p,
+            create: p,
+        });
+    }
+    console.log('✅ Purities created:', purities.length);
+
+    // Create Occasions
+    const occasions = [
+        { name: 'Wedding', displayOrder: 1 },
+        { name: 'Engagement', displayOrder: 2 },
+        { name: 'Anniversary', displayOrder: 3 },
+        { name: 'Festival', displayOrder: 4 },
+        { name: 'Party', displayOrder: 5 },
+        { name: 'Daily Wear', displayOrder: 6 },
+        { name: 'Office', displayOrder: 7 },
+        { name: 'Traditional', displayOrder: 8 },
+        { name: 'Cocktail', displayOrder: 9 },
+        { name: 'Special', displayOrder: 10 },
+    ];
+
+    for (const occ of occasions) {
+        await prisma.occasion.upsert({
+            where: { name: occ.name },
+            update: occ,
+            create: occ,
+        });
+    }
+    console.log('✅ Occasions created:', occasions.length);
+
     // Get category IDs
     const ringsCategory = await prisma.category.findUnique({ where: { slug: 'rings' } });
     const necklacesCategory = await prisma.category.findUnique({ where: { slug: 'necklaces' } });

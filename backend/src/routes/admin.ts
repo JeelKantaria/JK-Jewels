@@ -112,13 +112,17 @@ router.get('/dashboard', asyncHandler(async (req: Request, res: Response) => {
             lowStockProducts,
             outOfStockCount,
             lowStockThreshold: LOW_STOCK_THRESHOLD,
+            statusBreakdown: await prisma.order.groupBy({
+                by: ['status'],
+                _count: { id: true },
+            }).then(stats => stats.map(s => ({ status: s.status, count: s._count.id }))),
         },
     });
 }));
 
 // GET /api/admin/orders - Get all orders with filters
 router.get('/orders', asyncHandler(async (req: Request, res: Response) => {
-    const { page = '1', limit = '20', status, search } = req.query;
+    const { page = '1', limit = '20', status, search, from, to } = req.query;
 
     const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
     const limitNum = Math.min(50, Math.max(1, parseInt(limit as string, 10) || 20));
@@ -135,6 +139,21 @@ router.get('/orders', asyncHandler(async (req: Request, res: Response) => {
             { guestName: { contains: search as string, mode: 'insensitive' } },
             { guestEmail: { contains: search as string, mode: 'insensitive' } },
         ];
+    }
+
+    // Date filtering
+    if (from || to) {
+        where.createdAt = {};
+        if (from) {
+            const fromDate = new Date(from as string);
+            fromDate.setHours(0, 0, 0, 0);
+            where.createdAt.gte = fromDate;
+        }
+        if (to) {
+            const toDate = new Date(to as string);
+            toDate.setHours(23, 59, 59, 999);
+            where.createdAt.lte = toDate;
+        }
     }
 
     const [orders, total] = await Promise.all([
@@ -330,7 +349,14 @@ router.post('/products', asyncHandler(async (req: Request, res: Response) => {
                     stockQuantity: v.stockQuantity || 0,
                     additionalPrice: v.additionalPrice || 0,
                 })),
-            } : undefined,
+            } : {
+                // Create a default variant so product appears in inventory
+                create: {
+                    size: 'One Size',
+                    stockQuantity: 0,
+                    additionalPrice: 0,
+                },
+            },
         },
         include: {
             category: true,
@@ -397,6 +423,16 @@ router.put('/products/:id', asyncHandler(async (req: Request, res: Response) => 
                         stockQuantity: v.stockQuantity || 0,
                         additionalPrice: v.additionalPrice || 0,
                     })),
+                });
+            } else {
+                // Create default variant so product appears in inventory
+                await tx.productVariant.create({
+                    data: {
+                        productId: id,
+                        size: 'One Size',
+                        stockQuantity: 0,
+                        additionalPrice: 0,
+                    },
                 });
             }
         }
@@ -678,6 +714,239 @@ router.put('/inventory/:variantId', asyncHandler(async (req: Request, res: Respo
         message: `Stock updated for ${variant.product.name} (Size: ${variant.size})`,
         data: variant,
     });
+}));
+
+// ========================================
+// CATEGORY MANAGEMENT
+// ========================================
+
+// GET /api/admin/categories - Get all categories
+router.get('/categories', asyncHandler(async (req: Request, res: Response) => {
+    const categories = await prisma.category.findMany({
+        orderBy: [{ displayOrder: 'asc' }, { name: 'asc' }],
+        include: {
+            _count: { select: { products: true } }
+        }
+    });
+
+    res.json({
+        success: true,
+        data: categories,
+    });
+}));
+
+// POST /api/admin/categories - Create new category
+router.post('/categories', asyncHandler(async (req: Request, res: Response) => {
+    const { name, slug, description, image, parentId, displayOrder, isActive } = req.body;
+
+    if (!name || name.trim().length < 2) {
+        throw new AppError('Category name must be at least 2 characters', 400, ErrorCodes.VALIDATION_ERROR);
+    }
+
+    const categorySlug = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+    // Check if slug exists
+    const existingSlug = await prisma.category.findUnique({ where: { slug: categorySlug } });
+    if (existingSlug) {
+        throw new AppError('Category URL slug already exists', 400, ErrorCodes.VALIDATION_ERROR);
+    }
+
+    const category = await prisma.category.create({
+        data: {
+            name: name.trim(),
+            slug: categorySlug,
+            description: description || null,
+            image: image || null,
+            parentId: parentId || null,
+            displayOrder: displayOrder || 0,
+            isActive: isActive ?? true,
+        },
+    });
+
+    res.status(201).json({
+        success: true,
+        message: 'Category created successfully',
+        data: category,
+    });
+}));
+
+// PUT /api/admin/categories/:id - Update category
+router.put('/categories/:id', asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { name, slug, description, image, parentId, displayOrder, isActive } = req.body;
+
+    // Check slug uniqueness if changed
+    if (slug) {
+        const existingSlug = await prisma.category.findFirst({
+            where: { slug, id: { not: id } }
+        });
+        if (existingSlug) {
+            throw new AppError('Category URL slug already exists', 400, ErrorCodes.VALIDATION_ERROR);
+        }
+    }
+
+    const category = await prisma.category.update({
+        where: { id },
+        data: {
+            name,
+            slug,
+            description,
+            image,
+            parentId,
+            displayOrder,
+            isActive,
+        },
+    });
+
+    res.json({
+        success: true,
+        message: 'Category updated successfully',
+        data: category,
+    });
+}));
+
+// DELETE /api/admin/categories/:id - Delete category
+router.delete('/categories/:id', asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    // Check if category has products
+    const productsCount = await prisma.product.count({ where: { categoryId: id } });
+    if (productsCount > 0) {
+        throw new AppError(`Cannot delete category with ${productsCount} products. Move products first.`, 400, ErrorCodes.VALIDATION_ERROR);
+    }
+
+    await prisma.category.delete({ where: { id } });
+
+    res.json({
+        success: true,
+        message: 'Category deleted successfully',
+    });
+}));
+
+// ========================================
+// METAL TYPE MANAGEMENT
+// ========================================
+
+// GET /api/admin/metal-types
+router.get('/metal-types', asyncHandler(async (req: Request, res: Response) => {
+    const metalTypes = await prisma.metalType.findMany({
+        orderBy: [{ displayOrder: 'asc' }, { name: 'asc' }],
+    });
+    res.json({ success: true, data: metalTypes });
+}));
+
+// POST /api/admin/metal-types
+router.post('/metal-types', asyncHandler(async (req: Request, res: Response) => {
+    const { name, displayOrder, isActive } = req.body;
+    if (!name?.trim()) throw new AppError('Name is required', 400, ErrorCodes.VALIDATION_ERROR);
+
+    const metalType = await prisma.metalType.create({
+        data: { name: name.trim(), displayOrder: displayOrder || 0, isActive: isActive ?? true },
+    });
+    res.status(201).json({ success: true, message: 'Metal type created', data: metalType });
+}));
+
+// PUT /api/admin/metal-types/:id
+router.put('/metal-types/:id', asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { name, displayOrder, isActive } = req.body;
+
+    const metalType = await prisma.metalType.update({
+        where: { id },
+        data: { name, displayOrder, isActive },
+    });
+    res.json({ success: true, message: 'Metal type updated', data: metalType });
+}));
+
+// DELETE /api/admin/metal-types/:id
+router.delete('/metal-types/:id', asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    await prisma.metalType.delete({ where: { id } });
+    res.json({ success: true, message: 'Metal type deleted' });
+}));
+
+// ========================================
+// PURITY MANAGEMENT
+// ========================================
+
+// GET /api/admin/purities
+router.get('/purities', asyncHandler(async (req: Request, res: Response) => {
+    const purities = await prisma.purity.findMany({
+        orderBy: [{ displayOrder: 'asc' }, { name: 'asc' }],
+    });
+    res.json({ success: true, data: purities });
+}));
+
+// POST /api/admin/purities
+router.post('/purities', asyncHandler(async (req: Request, res: Response) => {
+    const { name, metalType, displayOrder, isActive } = req.body;
+    if (!name?.trim()) throw new AppError('Name is required', 400, ErrorCodes.VALIDATION_ERROR);
+
+    const purity = await prisma.purity.create({
+        data: { name: name.trim(), metalType: metalType || null, displayOrder: displayOrder || 0, isActive: isActive ?? true },
+    });
+    res.status(201).json({ success: true, message: 'Purity created', data: purity });
+}));
+
+// PUT /api/admin/purities/:id
+router.put('/purities/:id', asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { name, metalType, displayOrder, isActive } = req.body;
+
+    const purity = await prisma.purity.update({
+        where: { id },
+        data: { name, metalType, displayOrder, isActive },
+    });
+    res.json({ success: true, message: 'Purity updated', data: purity });
+}));
+
+// DELETE /api/admin/purities/:id
+router.delete('/purities/:id', asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    await prisma.purity.delete({ where: { id } });
+    res.json({ success: true, message: 'Purity deleted' });
+}));
+
+// ========================================
+// OCCASION MANAGEMENT
+// ========================================
+
+// GET /api/admin/occasions
+router.get('/occasions', asyncHandler(async (req: Request, res: Response) => {
+    const occasions = await prisma.occasion.findMany({
+        orderBy: [{ displayOrder: 'asc' }, { name: 'asc' }],
+    });
+    res.json({ success: true, data: occasions });
+}));
+
+// POST /api/admin/occasions
+router.post('/occasions', asyncHandler(async (req: Request, res: Response) => {
+    const { name, displayOrder, isActive } = req.body;
+    if (!name?.trim()) throw new AppError('Name is required', 400, ErrorCodes.VALIDATION_ERROR);
+
+    const occasion = await prisma.occasion.create({
+        data: { name: name.trim(), displayOrder: displayOrder || 0, isActive: isActive ?? true },
+    });
+    res.status(201).json({ success: true, message: 'Occasion created', data: occasion });
+}));
+
+// PUT /api/admin/occasions/:id
+router.put('/occasions/:id', asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { name, displayOrder, isActive } = req.body;
+
+    const occasion = await prisma.occasion.update({
+        where: { id },
+        data: { name, displayOrder, isActive },
+    });
+    res.json({ success: true, message: 'Occasion updated', data: occasion });
+}));
+
+// DELETE /api/admin/occasions/:id
+router.delete('/occasions/:id', asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    await prisma.occasion.delete({ where: { id } });
+    res.json({ success: true, message: 'Occasion deleted' });
 }));
 
 export default router;

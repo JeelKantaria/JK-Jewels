@@ -14,13 +14,21 @@ import {
     Settings,
     LogOut,
     ChevronLeft,
-    Warehouse
+    Warehouse,
+    FolderOpen,
+    Gem,
+    Shield,
+    Calendar
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/store';
 
 const adminNavItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/products', label: 'Products', icon: Package },
+    { href: '/admin/categories', label: 'Categories', icon: FolderOpen },
+    { href: '/admin/metal-types', label: 'Metal Types', icon: Gem },
+    { href: '/admin/purities', label: 'Purities', icon: Shield },
+    { href: '/admin/occasions', label: 'Occasions', icon: Calendar },
     { href: '/admin/inventory', label: 'Inventory', icon: Warehouse },
     { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
     { href: '/admin/customers', label: 'Customers', icon: Users },

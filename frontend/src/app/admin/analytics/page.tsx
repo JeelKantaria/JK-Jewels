@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
     TrendingUp,
@@ -9,14 +10,19 @@ import {
     Package,
     Calendar,
     ArrowUp,
-    ArrowDown
+    ArrowDown,
+    Filter
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { formatPrice } from '@/lib/utils';
 
 export default function AdminAnalyticsPage() {
+    const [period, setPeriod] = useState('month');
+    const [fromDate, setFromDate] = useState('');
+    const [toDate, setToDate] = useState('');
+
     // Fetch dashboard stats for analytics overview
-    const { data: stats, isLoading } = useQuery({
+    const { data: dashboardStats } = useQuery({
         queryKey: ['admin', 'dashboard'],
         queryFn: async () => {
             const response = await api.get('/admin/dashboard');
@@ -24,46 +30,115 @@ export default function AdminAnalyticsPage() {
         },
     });
 
-    if (isLoading) {
-        return (
-            <div className="p-8">
-                <div className="animate-pulse space-y-6">
-                    <div className="h-8 w-48 bg-gray-200 rounded" />
-                    <div className="grid grid-cols-2 gap-6">
-                        {[...Array(4)].map((_, i) => (
-                            <div key={i} className="h-64 bg-gray-200 rounded-xl" />
-                        ))}
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    const { data: analyticsOverview } = useQuery({
+        queryKey: ['admin', 'analytics', 'overview'],
+        queryFn: async () => {
+            const response = await api.get('/admin/analytics/overview');
+            return response.data.data;
+        },
+    });
 
-    const displayStats = stats || {
-        totalOrders: 0,
-        totalRevenue: 0,
-        totalProducts: 0,
-        totalCustomers: 0,
-        pendingOrders: 0,
+    const { data: analyticsComparison } = useQuery({
+        queryKey: ['admin', 'analytics', 'comparison', period, fromDate, toDate],
+        queryFn: async () => {
+            let url = `/admin/analytics/comparison`;
+            if (period === 'custom' && fromDate && toDate) {
+                url += `?from=${fromDate}&to=${toDate}`;
+            } else {
+                url += `?period=${period}`;
+            }
+            const response = await api.get(url);
+            return response.data.data;
+        },
+    });
+
+    // Use filtered totals if available, otherwise fallback to dashboard stats (all time)
+    // Actually, dashboard stats are "All Time", but our filtered panels should show "Selected Period" totals.
+    // So if comparison data is loaded, use it.
+    const displayStats = analyticsComparison?.totals || {
+        revenue: 0,
+        orders: 0,
+        customers: 0,
     };
 
-    // Mock analytics data (in a real app, this would come from the API)
-    const monthlyData = [
-        { month: 'Jan', orders: 45, revenue: 125000 },
-        { month: 'Feb', orders: 52, revenue: 148000 },
-        { month: 'Mar', orders: 48, revenue: 135000 },
-        { month: 'Apr', orders: 61, revenue: 172000 },
-        { month: 'May', orders: 55, revenue: 155000 },
-        { month: 'Jun', orders: 67, revenue: 189000 },
-    ];
+    // We still need totalProducts from dashboardStats as it's not time-bound
+    const totalProducts = dashboardStats?.totalProducts || 0;
 
-    const maxRevenue = Math.max(...monthlyData.map(d => d.revenue));
+    const monthlyData = analyticsOverview?.monthlyData || [];
+    const statusBreakdown = analyticsOverview?.statusBreakdown || [];
+
+    // Calculate max revenue and max orders for chart scaling
+    const maxRevenue = monthlyData.length > 0
+        ? Math.max(...monthlyData.map((d: any) => d.revenue))
+        : 10000;
+    const maxOrders = monthlyData.length > 0
+        ? Math.max(...monthlyData.map((d: any) => d.orders))
+        : 100;
+
+    const renderTrend = (value: number | undefined) => {
+        if (value === undefined) return null;
+        const isPositive = value >= 0;
+        return (
+            <div className={`flex items-center gap-1 text-sm ${isPositive ? 'text-emerald-600' : 'text-red-600'}`}>
+                {isPositive ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
+                {Math.abs(value)}%
+            </div>
+        );
+    };
+
+    const periods = [
+        { label: 'Today', value: 'day' },
+        { label: 'This Week', value: 'week' },
+        { label: 'This Month', value: 'month' },
+        { label: 'This Quarter', value: 'quarter' },
+        { label: 'This Year', value: 'year' },
+        { label: 'Custom Range', value: 'custom' },
+    ];
 
     return (
         <div className="p-8">
-            <div className="mb-8">
-                <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
-                <p className="text-gray-500 mt-1">Overview of your store performance</p>
+            <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
+                    <p className="text-gray-500 mt-1">Overview of your store performance</p>
+                </div>
+
+                {/* Period Filter */}
+                <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
+                        <Filter size={16} className="text-gray-500 ml-2" />
+                        <select
+                            value={period}
+                            onChange={(e) => setPeriod(e.target.value)}
+                            className="bg-transparent border-none text-sm font-medium text-gray-700 focus:ring-0 cursor-pointer outline-none"
+                        >
+                            {periods.map((p) => (
+                                <option key={p.value} value={p.value}>{p.label}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {period === 'custom' && (
+                        <div className="flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
+                            <Calendar size={16} className="text-gray-500" />
+                            <input
+                                type="date"
+                                value={fromDate}
+                                onChange={(e) => setFromDate(e.target.value)}
+                                className="bg-transparent border-none text-sm text-gray-700 outline-none"
+                                max={toDate || undefined}
+                            />
+                            <span className="text-gray-400">to</span>
+                            <input
+                                type="date"
+                                value={toDate}
+                                onChange={(e) => setToDate(e.target.value)}
+                                className="bg-transparent border-none text-sm text-gray-700 outline-none"
+                                min={fromDate || undefined}
+                            />
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Key Metrics */}
@@ -73,15 +148,12 @@ export default function AdminAnalyticsPage() {
                         <div className="p-3 bg-primary-100 rounded-lg">
                             <IndianRupee className="text-primary-600" size={24} />
                         </div>
-                        <div className="flex items-center gap-1 text-emerald-600 text-sm">
-                            <ArrowUp size={16} />
-                            12.5%
-                        </div>
+                        {renderTrend(analyticsComparison?.growth?.revenue)}
                     </div>
                     <p className="mt-4 text-2xl font-bold text-gray-900">
-                        {formatPrice(displayStats.totalRevenue)}
+                        {formatPrice(displayStats.revenue)}
                     </p>
-                    <p className="text-sm text-gray-500">Total Revenue</p>
+                    <p className="text-sm text-gray-500">Revenue</p>
                 </div>
 
                 <div className="bg-white rounded-xl shadow-sm p-6">
@@ -89,15 +161,12 @@ export default function AdminAnalyticsPage() {
                         <div className="p-3 bg-emerald-100 rounded-lg">
                             <ShoppingCart className="text-emerald-600" size={24} />
                         </div>
-                        <div className="flex items-center gap-1 text-emerald-600 text-sm">
-                            <ArrowUp size={16} />
-                            8.2%
-                        </div>
+                        {renderTrend(analyticsComparison?.growth?.orders)}
                     </div>
                     <p className="mt-4 text-2xl font-bold text-gray-900">
-                        {displayStats.totalOrders}
+                        {displayStats.orders}
                     </p>
-                    <p className="text-sm text-gray-500">Total Orders</p>
+                    <p className="text-sm text-gray-500">Orders</p>
                 </div>
 
                 <div className="bg-white rounded-xl shadow-sm p-6">
@@ -105,15 +174,12 @@ export default function AdminAnalyticsPage() {
                         <div className="p-3 bg-accent-100 rounded-lg">
                             <Users className="text-accent-700" size={24} />
                         </div>
-                        <div className="flex items-center gap-1 text-emerald-600 text-sm">
-                            <ArrowUp size={16} />
-                            5.1%
-                        </div>
+                        {renderTrend(analyticsComparison?.growth?.customers)}
                     </div>
                     <p className="mt-4 text-2xl font-bold text-gray-900">
-                        {displayStats.totalCustomers}
+                        {displayStats.customers}
                     </p>
-                    <p className="text-sm text-gray-500">Total Customers</p>
+                    <p className="text-sm text-gray-500">New Customers</p>
                 </div>
 
                 <div className="bg-white rounded-xl shadow-sm p-6">
@@ -122,11 +188,11 @@ export default function AdminAnalyticsPage() {
                             <Package className="text-sky-600" size={24} />
                         </div>
                         <div className="flex items-center gap-1 text-gray-500 text-sm">
-                            —
+                            Live
                         </div>
                     </div>
                     <p className="mt-4 text-2xl font-bold text-gray-900">
-                        {displayStats.totalProducts}
+                        {totalProducts}
                     </p>
                     <p className="text-sm text-gray-500">Active Products</p>
                 </div>
@@ -144,15 +210,27 @@ export default function AdminAnalyticsPage() {
                         </div>
                     </div>
                     <div className="h-64 flex items-end justify-between gap-4">
-                        {monthlyData.map((data) => (
+                        {monthlyData.length > 0 ? monthlyData.map((data: any) => (
                             <div key={data.month} className="flex-1 flex flex-col items-center">
-                                <div
-                                    className="w-full bg-primary-500 rounded-t-lg transition-all hover:bg-primary-600"
-                                    style={{ height: `${(data.revenue / maxRevenue) * 200}px` }}
-                                />
+                                <div className="w-full relative group h-full flex items-end">
+                                    <div
+                                        className="w-full bg-primary-500 rounded-t-lg transition-all hover:bg-primary-600"
+                                        style={{
+                                            height: `${Math.max((data.revenue / maxRevenue) * 100, 2)}%` // Min 2% height for visibility
+                                        }}
+                                    />
+                                    {/* Tooltip */}
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-xs p-2 rounded whitespace-nowrap z-10">
+                                        {formatPrice(data.revenue)}
+                                    </div>
+                                </div>
                                 <p className="mt-2 text-xs text-gray-500">{data.month}</p>
                             </div>
-                        ))}
+                        )) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                No data available
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -166,15 +244,27 @@ export default function AdminAnalyticsPage() {
                         </div>
                     </div>
                     <div className="h-64 flex items-end justify-between gap-4">
-                        {monthlyData.map((data) => (
+                        {monthlyData.length > 0 ? monthlyData.map((data: any) => (
                             <div key={data.month} className="flex-1 flex flex-col items-center">
-                                <div
-                                    className="w-full bg-emerald-500 rounded-t-lg transition-all hover:bg-emerald-600"
-                                    style={{ height: `${(data.orders / 70) * 200}px` }}
-                                />
+                                <div className="w-full relative group h-full flex items-end">
+                                    <div
+                                        className="w-full bg-emerald-500 rounded-t-lg transition-all hover:bg-emerald-600"
+                                        style={{
+                                            height: `${Math.max((data.orders / maxOrders) * 100, 2)}%`
+                                        }}
+                                    />
+                                    {/* Tooltip */}
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-xs p-2 rounded whitespace-nowrap z-10">
+                                        {data.orders} orders
+                                    </div>
+                                </div>
                                 <p className="mt-2 text-xs text-gray-500">{data.month}</p>
                             </div>
-                        ))}
+                        )) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                No data available
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -184,35 +274,32 @@ export default function AdminAnalyticsPage() {
                 <div className="bg-white rounded-xl shadow-sm p-6">
                     <h3 className="font-semibold text-gray-900 mb-4">Order Status Distribution</h3>
                     <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-full bg-primary-500" />
-                                <span className="text-sm text-gray-600">Pending</span>
-                            </div>
-                            <span className="font-medium">{displayStats.pendingOrders}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-full bg-sky-500" />
-                                <span className="text-sm text-gray-600">Processing</span>
-                            </div>
-                            <span className="font-medium">-</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                                <span className="text-sm text-gray-600">Delivered</span>
-                            </div>
-                            <span className="font-medium">-</span>
-                        </div>
+                        {statusBreakdown.length > 0 ? (
+                            statusBreakdown.map((status: any) => (
+                                <div key={status.status} className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <div className={`w-3 h-3 rounded-full ${status.status === 'PENDING' ? 'bg-amber-500' :
+                                            status.status === 'CONFIRMED' ? 'bg-blue-500' :
+                                                status.status === 'DELIVERED' ? 'bg-emerald-500' :
+                                                    status.status === 'CANCELLED' ? 'bg-red-500' :
+                                                        'bg-gray-500'
+                                            }`} />
+                                        <span className="text-sm text-gray-600 capitalized">{status.status}</span>
+                                    </div>
+                                    <span className="font-medium">{status.count}</span>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-sm text-gray-500">No orders yet</p>
+                        )}
                     </div>
                 </div>
 
                 <div className="bg-white rounded-xl shadow-sm p-6">
                     <h3 className="font-semibold text-gray-900 mb-4">Average Order Value</h3>
                     <p className="text-3xl font-bold text-gray-900">
-                        {displayStats.totalOrders > 0
-                            ? formatPrice(displayStats.totalRevenue / displayStats.totalOrders)
+                        {displayStats.orders > 0
+                            ? formatPrice(displayStats.revenue / displayStats.orders)
                             : formatPrice(0)}
                     </p>
                     <p className="text-sm text-gray-500 mt-2">Per order</p>
@@ -220,8 +307,12 @@ export default function AdminAnalyticsPage() {
 
                 <div className="bg-white rounded-xl shadow-sm p-6">
                     <h3 className="font-semibold text-gray-900 mb-4">Conversion Rate</h3>
-                    <p className="text-3xl font-bold text-gray-900">3.2%</p>
-                    <p className="text-sm text-gray-500 mt-2">Visitors to customers</p>
+                    <div className="flex flex-col h-full justify-between">
+                        <div>
+                            <p className="text-3xl font-bold text-gray-900">—</p>
+                            <p className="text-sm text-gray-500 mt-2">Requires visitor tracking</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -10,6 +10,7 @@ import reviewRoutes from './reviews.js';
 import promoRoutes from './promo.js';
 import contactRoutes from './contact.js';
 import adminRoutes from './admin.js';
+import analyticsRoutes from './analytics.js';
 
 const router = Router();
 
@@ -34,5 +35,6 @@ router.use('/reviews', reviewRoutes);
 router.use('/promo', promoRoutes);
 router.use('/contact', contactRoutes);
 router.use('/admin', adminRoutes);
+router.use('/admin/analytics', analyticsRoutes);
 
 export default router;

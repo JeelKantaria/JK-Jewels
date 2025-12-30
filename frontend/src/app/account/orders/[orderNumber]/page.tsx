@@ -306,6 +306,14 @@ export default function OrderDetailPage() {
                             )}
                         </div>
 
+                        {/* Customer Notes */}
+                        {order.customerNotes && (
+                            <div className="bg-amber-50 border border-amber-100 p-6 rounded-lg shadow-sm">
+                                <h2 className="font-heading text-lg text-amber-900 mb-2">Order Notes</h2>
+                                <p className="text-sm text-amber-800">{order.customerNotes}</p>
+                            </div>
+                        )}
+
                         {/* Payment Info */}
                         <div className="bg-white shadow-card p-6">
                             <h2 className="font-heading text-lg text-secondary-900 mb-4 flex items-center gap-2">

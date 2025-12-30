@@ -65,6 +65,7 @@ export default function ProductPageClient() {
                 variantId: selectedVariant || undefined,
                 quantity,
             });
+            queryClient.invalidateQueries({ queryKey: ['cart'] });
             toast.success('Added to cart!');
         } catch (error) {
             toast.error('Please login to add to cart');

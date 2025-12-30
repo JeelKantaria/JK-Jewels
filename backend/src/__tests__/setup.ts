@@ -27,6 +27,6 @@ console.error = (...args: unknown[]) => {
     // Only show unexpected errors, not expected test failures
     if (!args[0]?.toString().includes('AppError')) {
         // Still log unexpected errors during development
-        // originalConsoleError(...args);
+        originalConsoleError(...args);
     }
 };

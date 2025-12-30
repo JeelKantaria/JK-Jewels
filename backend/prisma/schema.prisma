@@ -95,6 +95,42 @@ model Category {
   @@map("categories")
 }
 
+model MetalType {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  displayOrder Int     @default(0) @map("display_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  @@map("metal_types")
+}
+
+model Purity {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  metalType   String?  @map("metal_type") // Optional: Gold, Silver, etc.
+  displayOrder Int     @default(0) @map("display_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  @@map("purities")
+}
+
+model Occasion {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  displayOrder Int     @default(0) @map("display_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  @@map("occasions")
+}
 model Product {
   id           String    @id @default(uuid())
   sku          String    @unique
