@@ -2,11 +2,19 @@ import { Router, Request, Response } from 'express';
 import prisma from '../lib/prisma.js';
 import { AppError, ErrorCodes } from '../middleware/error.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
+import { getCache, setCache, CACHE_KEYS, CACHE_TTL } from '../lib/cache.js';
 
 const router = Router();
 
-// GET /api/categories - Get all categories
+// GET /api/categories - Get all categories (CACHED)
 router.get('/', asyncHandler(async (_req: Request, res: Response) => {
+    // Try to get from cache first
+    const cached = await getCache<any>(CACHE_KEYS.CATEGORIES);
+    if (cached) {
+        res.json({ success: true, data: cached });
+        return;
+    }
+
     const categories = await prisma.category.findMany({
         where: { isActive: true },
         orderBy: { displayOrder: 'asc' },
@@ -25,6 +33,9 @@ router.get('/', asyncHandler(async (_req: Request, res: Response) => {
         ...parent,
         children: childCategories.filter((c) => c.parentId === parent.id),
     }));
+
+    // Cache the result
+    await setCache(CACHE_KEYS.CATEGORIES, categoriesWithChildren, CACHE_TTL.CATEGORIES);
 
     res.json({
         success: true,

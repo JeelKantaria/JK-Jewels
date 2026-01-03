@@ -4,6 +4,7 @@ import prisma from '../lib/prisma.js';
 import { optionalAuth } from '../middleware/auth.js';
 import { AppError, ErrorCodes } from '../middleware/error.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
+import { getCache, setCache, CACHE_KEYS, CACHE_TTL } from '../lib/cache.js';
 
 const router = Router();
 
@@ -143,8 +144,15 @@ router.get('/', optionalAuth as any, asyncHandler(async (req: Request, res: Resp
     });
 }));
 
-// GET /api/products/filters - Get filter counts for metal, purity, occasion
+// GET /api/products/filters - Get filter counts (CACHED 10min)
 router.get('/filters', asyncHandler(async (_req: Request, res: Response) => {
+    // Try cache first
+    const cached = await getCache<any>(CACHE_KEYS.PRODUCT_FILTERS);
+    if (cached) {
+        res.json({ success: true, data: cached });
+        return;
+    }
+
     // Get counts for each metal type
     const metalCounts = await prisma.product.groupBy({
         by: ['metalType'],
@@ -178,24 +186,36 @@ router.get('/filters', asyncHandler(async (_req: Request, res: Response) => {
         count,
     }));
 
+    const filterData = {
+        metalTypes: metalCounts.map((m) => ({
+            name: m.metalType,
+            count: m._count.metalType,
+        })),
+        purities: purityCounts.map((p) => ({
+            name: p.purity,
+            count: p._count.purity,
+        })),
+        occasions: occasionCounts,
+    };
+
+    // Cache the result
+    await setCache(CACHE_KEYS.PRODUCT_FILTERS, filterData, CACHE_TTL.PRODUCT_FILTERS);
+
     res.json({
         success: true,
-        data: {
-            metalTypes: metalCounts.map((m) => ({
-                name: m.metalType,
-                count: m._count.metalType,
-            })),
-            purities: purityCounts.map((p) => ({
-                name: p.purity,
-                count: p._count.purity,
-            })),
-            occasions: occasionCounts,
-        },
+        data: filterData,
     });
 }));
 
-// GET /api/products/featured - Get featured products
+// GET /api/products/featured - Get featured products (CACHED 5min)
 router.get('/featured', asyncHandler(async (_req: Request, res: Response) => {
+    // Try cache first
+    const cached = await getCache<any>(CACHE_KEYS.FEATURED_PRODUCTS);
+    if (cached) {
+        res.json({ success: true, data: cached });
+        return;
+    }
+
     const products = await prisma.product.findMany({
         where: { isActive: true, isFeatured: true },
         take: 8,
@@ -208,6 +228,9 @@ router.get('/featured', asyncHandler(async (_req: Request, res: Response) => {
             },
         },
     });
+
+    // Cache the result
+    await setCache(CACHE_KEYS.FEATURED_PRODUCTS, products, CACHE_TTL.FEATURED_PRODUCTS);
 
     res.json({
         success: true,
