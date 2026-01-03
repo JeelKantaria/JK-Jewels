@@ -37,7 +37,7 @@ Deploy the JK-Jewels e-commerce platform to free hosting platforms.
    - **Name**: `jk-jewels-api`
    - **Root Directory**: `backend`
    - **Runtime**: `Node`
-   - **Build Command**: `npm install && npx prisma generate && npm run build`
+   - **Build Command**: `npm install --include=dev && npx prisma generate && npm run build`
    - **Start Command**: `npm start`
    - **Instance Type**: `Free`
 

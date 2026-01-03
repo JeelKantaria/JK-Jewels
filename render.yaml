@@ -9,7 +9,7 @@ services:
     region: oregon  # Free tier region
     plan: free
     rootDir: backend
-    buildCommand: npm install && npx prisma generate && npm run build
+    buildCommand: npm install --include=dev && npx prisma generate && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
