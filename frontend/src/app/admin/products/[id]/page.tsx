@@ -48,6 +48,7 @@ export default function EditProductPage() {
         categoryId: product.categoryId || '',
         metalType: product.metalType || 'Gold',
         purity: product.purity || '22K',
+        occasion: product.occasion || [],
         basePrice: Number(product.basePrice) || 0,
         weight: Number(product.weight) || 0,
         isActive: product.isActive ?? true,
