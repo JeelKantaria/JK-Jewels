@@ -57,9 +57,13 @@ const startServer = async () => {
         await prisma.$connect();
         console.log('✅ Database connected');
 
-        // Initialize Redis
-        const redis = getRedis();
-        await redis.connect();
+        // Initialize Redis (optional - app works without it)
+        try {
+            const redis = getRedis();
+            await redis.connect();
+        } catch (redisError) {
+            console.warn('⚠️ Redis not available - caching disabled');
+        }
 
         // Start listening
         app.listen(config.port, () => {
