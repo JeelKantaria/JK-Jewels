@@ -1,0 +1,315 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   JK JEWELS - LUXURY DESIGN SYSTEM
+   ============================================ */
+
+@layer base {
+  :root {
+    /* Colors */
+    --color-gold: #C9A962;
+    --color-gold-light: #F5E6C8;
+    --color-black: #1A1A1A;
+    --color-cream: #FAF8F5;
+    --color-ruby: #8B2942;
+
+    /* Font sizing */
+    --heading-1: clamp(2.5rem, 5vw, 4rem);
+    --heading-2: clamp(2rem, 4vw, 3rem);
+    --heading-3: clamp(1.5rem, 3vw, 2rem);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-cream-100 text-secondary-900 font-body;
+    font-feature-settings: 'liga' 1, 'calt' 1;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading font-semibold tracking-tight;
+  }
+
+  /* Selection highlight with gold */
+  ::selection {
+    background-color: rgba(201, 169, 98, 0.3);
+    color: #1A1A1A;
+  }
+
+  /* Smooth scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-cream-200;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary-400 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary-500;
+  }
+}
+
+@layer components {
+
+  /* Premium Button Styles */
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-medium bg-secondary-900 text-cream-100 rounded-none transition-all duration-300 ease-luxury hover:bg-primary-500 hover:text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden;
+  }
+
+  .btn-primary::after {
+    content: '';
+    @apply absolute inset-0 bg-gold-shimmer -translate-x-full;
+    animation: shimmer 2s infinite;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-medium bg-transparent text-secondary-900 rounded-none border border-secondary-900 transition-all duration-300 ease-luxury hover:bg-secondary-900 hover:text-cream-100 focus:outline-none focus:ring-2 focus:ring-secondary-900 focus:ring-offset-2;
+  }
+
+  .btn-gold {
+    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-medium bg-primary-500 text-secondary-900 rounded-none transition-all duration-300 ease-luxury hover:bg-primary-600 hover:shadow-luxury focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+
+  /* Premium Card Styles */
+  .card-luxury {
+    @apply bg-white rounded-none shadow-card transition-all duration-500 ease-luxury hover:shadow-card-hover hover:-translate-y-1;
+  }
+
+  .card-product {
+    @apply relative overflow-hidden bg-white transition-all duration-500 ease-luxury;
+  }
+
+  .card-product:hover .product-image {
+    @apply scale-105;
+  }
+
+  /* Gold border accent */
+  .gold-border {
+    @apply border border-primary-300;
+  }
+
+  .gold-border-b {
+    @apply border-b-2 border-primary-500;
+  }
+
+  /* Text styles */
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent bg-gold-gradient;
+  }
+
+  /* Input styles */
+  .input-luxury {
+    @apply w-full px-4 py-3 bg-white border border-cream-400 text-secondary-900 placeholder-secondary-400 transition-all duration-300 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500;
+  }
+
+  /* Container */
+  .container-luxury {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Section spacing */
+  .section-padding {
+    @apply py-16 md:py-24 lg:py-32;
+  }
+
+  /* Glass effect */
+  .glass {
+    @apply bg-white/80 backdrop-blur-md border border-white/20;
+  }
+
+  /* Product overlay on hover */
+  .product-overlay {
+    @apply absolute inset-0 bg-black/0 transition-all duration-300 group-hover:bg-black/20;
+  }
+
+  /* Animated underline */
+  .link-underline {
+    @apply relative;
+  }
+
+  .link-underline::after {
+    content: '';
+    @apply absolute left-0 bottom-0 w-0 h-0.5 bg-primary-500 transition-all duration-300;
+  }
+
+  .link-underline:hover::after {
+    @apply w-full;
+  }
+
+  /* Loading skeleton */
+  .skeleton {
+    @apply animate-pulse bg-cream-300 rounded;
+  }
+
+  /* Badge styles */
+  .badge-new {
+    @apply absolute top-4 left-4 px-3 py-1 text-xs font-medium bg-primary-500 text-secondary-900 uppercase tracking-wider;
+  }
+
+  .badge-sale {
+    @apply absolute top-4 right-4 px-3 py-1 text-xs font-medium bg-accent-800 text-white uppercase tracking-wider;
+  }
+
+  /* Rose Gold Metallic Wishlist Heart */
+  .wishlist-heart {
+    @apply absolute top-3 right-3 z-10 overflow-hidden;
+    padding: 2px;
+    /* Accommodate the thicker outer border */
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  }
+
+  .wishlist-heart svg {
+    /* Styles handled inline in component for custom gradient */
+  }
+
+  .wishlist-heart::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.6) 50%,
+        transparent 100%);
+    animation: heart-shimmer 3s ease-in-out infinite;
+  }
+
+  @keyframes heart-shimmer {
+
+    0%,
+    100% {
+      left: -100%;
+      opacity: 0;
+    }
+
+    50% {
+      left: 100%;
+      opacity: 1;
+    }
+  }
+}
+
+@layer utilities {
+
+  /* Animation delays */
+  .animation-delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+
+  .animation-delay-400 {
+    animation-delay: 400ms;
+  }
+
+  .animation-delay-500 {
+    animation-delay: 500ms;
+  }
+
+  /* Smooth image transitions */
+  .img-hover-zoom {
+    @apply overflow-hidden;
+  }
+
+  .img-hover-zoom img {
+    @apply transition-transform duration-700 ease-out;
+  }
+
+  .img-hover-zoom:hover img {
+    @apply scale-110;
+  }
+
+  /* Focus ring for accessibility */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+
+  /* Hide scrollbar but allow scroll */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Custom animations */
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Hero text reveal animation */
+.hero-text-reveal {
+  clip-path: inset(0 100% 0 0);
+  animation: reveal 1s ease-out forwards;
+}
+
+@keyframes reveal {
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* Parallax effect */
+.parallax {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Image zoom container */
+.zoom-container {
+  @apply relative overflow-hidden cursor-zoom-in;
+}
+
+.zoom-container img {
+  @apply transition-transform duration-500;
+}
+
+.zoom-container:hover img {
+  @apply scale-150;
+}

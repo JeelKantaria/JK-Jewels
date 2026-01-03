@@ -1,0 +1,29 @@
+# JK-Jewels Render Blueprint
+# https://render.com/docs/blueprint-spec
+
+services:
+  # Backend API Service
+  - type: web
+    name: jk-jewels-api
+    runtime: node
+    region: oregon  # Free tier region
+    plan: free
+    rootDir: backend
+    buildCommand: npm install --include=dev && npx prisma generate && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false  # Set manually with Neon connection string
+      - key: REDIS_URL
+        sync: false  # Set manually with Upstash connection string (optional)
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        sync: false  # Set after frontend deployment
+      - key: PORT
+        value: 10000
