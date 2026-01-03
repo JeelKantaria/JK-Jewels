@@ -91,8 +91,43 @@ model Category {
   updatedAt   DateTime   @updatedAt @map("updated_at")
   
   products    Product[]
+  homepageRow HomepageRow?
   
   @@map("categories")
+}
+
+// Homepage Category Row Configuration
+model HomepageRow {
+  id              String   @id @default(uuid())
+  categoryId      String   @unique @map("category_id")
+  category        Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  
+  displayOrder    Int      @default(0) @map("display_order")
+  isActive        Boolean  @default(true) @map("is_active")
+  
+  // Product display settings: "all", "featured", or a specific count
+  productDisplay  String   @default("all") @map("product_display")
+  productCount    Int?     @map("product_count")
+  
+  // Scroll settings
+  scrollDirection String   @default("auto") @map("scroll_direction") // "left", "right", "auto"
+  scrollSpeed     Int?     @map("scroll_speed") // Override global speed (null = use global)
+  
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  
+  @@map("homepage_rows")
+}
+
+// Global Homepage Settings
+model HomepageSettings {
+  id                String   @id @default(uuid())
+  globalScrollSpeed Int      @default(30) @map("global_scroll_speed") // Seconds for one loop
+  
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  
+  @@map("homepage_settings")
 }
 
 model MetalType {

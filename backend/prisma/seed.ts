@@ -496,6 +496,48 @@ async function main() {
     });
     console.log('✅ Promo code created: SAVE200');
 
+    // Create Homepage Settings
+    await prisma.homepageSettings.upsert({
+        where: { id: 'default-homepage-settings' },
+        update: { globalScrollSpeed: 30 },
+        create: {
+            id: 'default-homepage-settings',
+            globalScrollSpeed: 30,
+        },
+    });
+    console.log('✅ Homepage settings created');
+
+    // Create Homepage Rows for each category
+    const homepageRows = [
+        { categorySlug: 'rings', displayOrder: 0, productDisplay: 'all', scrollDirection: 'auto' },
+        { categorySlug: 'necklaces', displayOrder: 1, productDisplay: 'all', scrollDirection: 'auto' },
+        { categorySlug: 'earrings', displayOrder: 2, productDisplay: 'all', scrollDirection: 'auto' },
+        { categorySlug: 'bracelets', displayOrder: 3, productDisplay: 'all', scrollDirection: 'auto' },
+    ];
+
+    for (const row of homepageRows) {
+        const category = await prisma.category.findUnique({ where: { slug: row.categorySlug } });
+        if (category) {
+            await prisma.homepageRow.upsert({
+                where: { categoryId: category.id },
+                update: {
+                    displayOrder: row.displayOrder,
+                    productDisplay: row.productDisplay,
+                    scrollDirection: row.scrollDirection,
+                    isActive: true,
+                },
+                create: {
+                    categoryId: category.id,
+                    displayOrder: row.displayOrder,
+                    productDisplay: row.productDisplay,
+                    scrollDirection: row.scrollDirection,
+                    isActive: true,
+                },
+            });
+        }
+    }
+    console.log('✅ Homepage rows created:', homepageRows.length);
+
     console.log('\n✨ Seeding completed successfully!');
     console.log('\n📋 Test accounts:');
     console.log('   Admin: admin@jkjewels.com / admin123');

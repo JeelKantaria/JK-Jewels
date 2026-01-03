@@ -18,12 +18,14 @@ import {
     FolderOpen,
     Gem,
     Shield,
-    Calendar
+    Calendar,
+    Home
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/store';
 
 const adminNavItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/admin/homepage', label: 'Homepage', icon: Home },
     { href: '/admin/products', label: 'Products', icon: Package },
     { href: '/admin/categories', label: 'Categories', icon: FolderOpen },
     { href: '/admin/metal-types', label: 'Metal Types', icon: Gem },
@@ -76,7 +78,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
 
                 {/* Navigation */}
-                <nav className="flex-1 p-4">
+                <nav className="flex-1 p-4 overflow-y-auto">
                     <ul className="space-y-1">
                         {adminNavItems.map((item) => {
                             const isActive = pathname === item.href ||

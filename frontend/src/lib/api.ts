@@ -204,4 +204,11 @@ export const promoApi = {
         api.get('/promo/available'),
 };
 
+// Homepage API
+export const homepageApi = {
+    getRows: () =>
+        api.get('/homepage/rows'),
+};
+
 export default api;
+

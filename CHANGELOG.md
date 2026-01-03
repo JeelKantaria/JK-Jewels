@@ -5,6 +5,53 @@ All notable changes to the J.K. Jewels project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2025-12-31
+
+### Added
+
+#### Homepage Revamp with Auto-Scrolling Category Rows
+- **Infinite Scroll Rows** - Products scroll horizontally in alternating directions (Row 1: left, Row 2: right, etc.)
+- **Category-Based Display** - Each row displays products from a specific category
+- **Hover Interactions**:
+  - Scroll pauses on hover
+  - Product name appears with translucent gradient overlay
+  - Wishlist and Add to Cart buttons appear
+  - Wishlisted items show persistent heart badge
+- **View All Links** - Each row has a "View All →" link to shop page with category filter
+- **Mobile Support** - Touch-friendly with swipe support and pause on touch
+
+#### Admin Homepage Configuration (`/admin/homepage`)
+- **Drag-and-Drop Row Ordering** - Reorder category rows visually
+- **Category Selection** - Add/remove categories from homepage
+- **Product Display Modes**:
+  - All products
+  - Featured only
+  - Specific count (1-50)
+- **Scroll Direction** - Left, Right, or Alternating (auto)
+- **Scroll Speed Configuration**:
+  - Global speed setting (10-60 seconds)
+  - Per-row speed override
+- **Toggle Visibility** - Show/hide rows without deleting
+
+#### Backend Changes
+- **New Database Models**:
+  - `HomepageRow` - Stores category row configuration
+  - `HomepageSettings` - Global homepage settings
+- **New API Endpoints**:
+  - `GET /api/homepage/rows` - Public endpoint for homepage display
+  - `GET /api/homepage/admin` - Admin settings and rows
+  - `PUT /api/homepage/admin/settings` - Update global settings
+  - `POST /api/homepage/admin/rows` - Add category row
+  - `PUT /api/homepage/admin/rows/:id` - Update row settings
+  - `DELETE /api/homepage/admin/rows/:id` - Remove row
+  - `PUT /api/homepage/admin/rows/reorder` - Reorder rows
+
+### Changed
+- **Homepage Layout** - Replaced static category grid, featured products, banner, new arrivals, and testimonials with dynamic auto-scrolling category rows
+- **Admin Sidebar** - Added "Homepage" link with Home icon after Dashboard
+
+---
+
 ## [1.6.0] - 2025-12-31
 
 ### Added

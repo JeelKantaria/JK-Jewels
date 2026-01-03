@@ -11,6 +11,7 @@ import promoRoutes from './promo.js';
 import contactRoutes from './contact.js';
 import adminRoutes from './admin.js';
 import analyticsRoutes from './analytics.js';
+import homepageRoutes from './homepage.js';
 
 const router = Router();
 
@@ -36,5 +37,7 @@ router.use('/promo', promoRoutes);
 router.use('/contact', contactRoutes);
 router.use('/admin', adminRoutes);
 router.use('/admin/analytics', analyticsRoutes);
+router.use('/homepage', homepageRoutes);
 
 export default router;
+
